@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Interface IA - Starky</title>
+
+<!-- Import Google Fonts et Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+<style>
+  :root {
+    --vh: 1vh;
+
+    /* Variables pour thème sombre */
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #111;
+    --bg-tertiary: #1a1a1a;
+    --text-primary: #fff;
+    --text-secondary: #ccc;
+    --text-tertiary: #999;
+    --border-color: #222;
+    --accent-color: #0ea5e9;
+    --hover-bg: rgba(255,255,255,0.05);
+    --user-msg-bg: #0ea5e9;
+    --bot-msg-bg: #111;
+    --overlay-bg: rgba(0,0,0,0.35);
+    --input-bg: #111;
+  }
+
+  /* Thème clair */
+  body.light-mode {
+    --bg-primary: #f8f9fa;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f1f3f5;
+    --text-primary: #1a1a1a;
+    --text-secondary: #4a5568;
+    --text-tertiary: #718096;
+    --border-color: #e2e8f0;
+    --accent-color: #0ea5e9;
+    --hover-bg: rgba(0,0,0,0.05);
+    --user-msg-bg: #0ea5e9;
+    --bot-msg-bg: #f1f3f5;
+    --overlay-bg: rgba(0,0,0,0.25);
+    --input-bg: #ffffff;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    height: calc(var(--vh) * 100);
+    overflow: hidden;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--bg-secondary);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
+    z-index: 100;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  .btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn:hover {
+    background: var(--hover-bg);
+    transform: scale(1.05);
+  }
+
+  .btn .material-icons-outlined {
+    font-size: 22px;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+  }
+
+  .ia-name {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 25px;
+    padding: 8px 18px;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--accent-color);
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  /* OVERLAY */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay-bg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 190;
+  }
+  .overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* MENU MODERNE */
+  .menu {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    width: 260px;
+    height: 100%;
+    background: var(--bg-secondary);
+    backdrop-filter: blur(10px);
+    transition: left 0.28s ease, background 0.3s ease;
+    border-right: 1px solid var(--border-color);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .menu.active { left: 0; }
+
+  .menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 12px;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--accent-color);
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .menu a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 10px 14px;
+    font-size: 15px;
+    transition: background 0.2s, color 0.2s;
+    border-radius: 8px;
+    margin: 6px 8px;
+  }
+
+  .menu a:hover {
+    background: var(--accent-color);
+    color: #fff;
+  }
+
+  .menu a .material-icons-outlined {
+    font-size: 20px;
+  }
+
+  .menu-footer {
+    margin-top: auto;
+    padding: 12px;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  #g_id_signin {
+    display: inline-block;
+  }
+
+  /* HISTORIQUE (accordéon) */
+  .accordion {
+    margin: 6px 8px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .acc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 14px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, color 0.3s;
+  }
+
+  .acc-header:hover {
+    background: var(--hover-bg);
+  }
+
+  .acc-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+  }
+
+  .acc-chevron {
+    transition: transform 0.2s ease, color 0.3s ease;
+    color: var(--text-secondary);
+  }
+
+  .acc-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.28s ease;
+    background: var(--hover-bg);
+  }
+
+  /* Conteneur avec scroll pour l'historique */
+  .history-list {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 4px 0;
+    padding-left: 46px;
+  }
+
+  /* Scrollbar personnalisée */
+  .history-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .history-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .history-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+  }
+
+  .history-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
+  }
+
+  /* Item d'historique avec bouton trois points */
+  .history-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px 8px 0;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 6px;
+    margin: 6px 8px 6px 0;
+    transition: background 0.2s, color 0.2s;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .history-item:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+  }
+
+  .history-item-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .history-item-actions {
+    opacity: 1; /* Toujours visible */
+    display: flex;
+    align-items: center;
+  }
+
+  .delete-btn {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-tertiary);
+    transition: color 0.2s, transform 0.2s;
+    border-radius: 4px;
+  }
+
+  .delete-btn:hover {
+    color: var(--accent-color);
+    background: var(--hover-bg);
+    transform: scale(1.1);
+  }
+
+  .delete-btn .material-icons-outlined {
+    font-size: 18px;
+  }
+
+  /* WELCOME */
+  .welcome {
+    position: absolute;
+    top: 85px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 18px;
+    color: var(--text-secondary);
+    font-weight: 700;
+    transition: opacity 0.4s ease, transform 0.4s ease, color 0.3s ease;
+  }
+
+  /* CHAT */
+  .chat {
+    position: absolute;
+    top: 95px;
+    bottom: 140px;
+    left: 0;
+    right: 0;
+    overflow-y: auto;
+    padding: 0 15px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Scrollbar personnalisée pour le chat */
+  .chat::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .chat::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .chat::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+
+  .chat::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
+  }
+
+  .msg {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    word-wrap: break-word;
+    font-size: 14px;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  .user {
+    align-self: flex-end;
+    background: var(--user-msg-bg);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+
+  .bot {
+    align-self: flex-start;
+    background: var(--bot-msg-bg);
+    color: var(--text-primary);
+    border-bottom-left-radius: 4px;
+  }
+
+  /* ANIMATION DES TROIS POINTS */
+  .typing-indicator {
+    align-self: flex-start;
+    background: var(--bot-msg-bg);
+    color: var(--text-primary);
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.3s ease;
+  }
+
+  .typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    display: inline-block;
+    animation: typing 1.4s infinite;
+  }
+
+  .typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes typing {
+    0%, 60%, 100% {
+      transform: translateY(0);
+      opacity: 0.5;
+    }
+    30% {
+      transform: translateY(-10px);
+      opacity: 1;
+    }
+  }
+
+  /* INPUT WRAPPER */
+  .input-wrapper {
+    position: fixed;
+    bottom: 15px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    padding: 0 12px;
+    z-index: 150;
+  }
+
+  /* INPUT BOX */
+  .input-box {
+    width: 100%;
+    max-width: 560px;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: background 0.3s ease, border-color 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  body.light-mode .input-box {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  /* Aperçu média */
+  .media-preview-container {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: var(--hover-bg);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+  }
+
+  .media-preview-container.active {
+    display: flex;
+  }
+
+  .media-preview {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+  }
+
+  .media-preview-name {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.3s ease;
+  }
+
+  .media-remove {
+    background: transparent;
+    border: none;
+    color: #ff4444;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+  }
+
+  .media-remove:hover {
+    transform: scale(1.1);
+  }
+
+  .media-remove .material-icons-outlined {
+    font-size: 20px;
+  }
+
+  /* Zone de texte */
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .input-row input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 16px;
+    outline: none;
+    transition: color 0.3s ease;
+  }
+
+  .input-row input::placeholder {
+    color: var(--text-tertiary);
+    transition: color 0.3s ease;
+  }
+
+  /* Bouton envoyer */
+  .send-btn {
+    background: #333;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .send-btn:active {
+    transform: scale(0.95);
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Boutons média et vocal */
+  .button-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border-color);
+    transition: border-color 0.3s ease;
+  }
+
+  .media-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .media-btn:hover:not(:disabled) {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+  }
+
+  .media-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .media-btn .material-icons-outlined {
+    font-size: 18px;
+  }
+
+  #mediaInput {
+    display: none;
+  }
+
+  /* Notification */
+  .notification {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-secondary);
+    border: 1px solid var(--accent-color);
+    color: var(--text-primary);
+    padding: 12px 24px;
+    border-radius: 12px;
+    z-index: 300;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, background 0.3s ease, color 0.3s ease;
+  }
+
+  .notification.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Modal de confirmation */
+  .confirm-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 400;
+  }
+
+  .confirm-modal.active {
+    display: flex;
+  }
+
+  .confirm-content {
+    background: var(--bg-secondary);
+    padding: 24px;
+    border-radius: 16px;
+    max-width: 400px;
+    width: 90%;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  .confirm-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    transition: color 0.3s ease;
+  }
+
+  .confirm-message {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    transition: color 0.3s ease;
+  }
+
+  .confirm-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+
+  .confirm-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+
+  .confirm-btn.cancel {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+  }
+
+  .confirm-btn.cancel:hover {
+    background: var(--hover-bg);
+  }
+
+  .confirm-btn.delete {
+    background: #ff4444;
+    color: #fff;
+  }
+
+  .confirm-btn.delete:hover {
+    background: #cc0000;
+  }
+
+  /* Responsive */
+  @media (max-width: 420px) {
+    .menu { width: 240px; left: -240px; }
+    .input-box { max-width: 420px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <button class="btn" id="menuBtn" aria-label="Ouvrir le menu"><span class="material-icons-outlined">menu</span></button>
+    <div class="ia-name">Starky</div>
+    <button class="btn" id="themeBtn" aria-label="Thème"><span class="material-icons-outlined">light_mode</span></button>
+  </div>
+
+  <!-- OVERLAY -->
+  <div id="overlay" class="overlay" tabindex="-1"></div>
+
+  <!-- MENU MODERNE -->
+  <nav class="menu" id="sideMenu" aria-hidden="true" aria-label="Menu principal">
+    <div class="menu-header">
+      <span class="material-icons-outlined">chat</span>
+      <span style="font-weight:700;">Starky</span>
+    </div>
+
+    <a href="#" id="newChatLink"><span class="material-icons-outlined">chat</span>New Chat</a>
+
+    <div class="accordion" id="historyAcc">
+      <div class="acc-header" id="accHeader" role="button" aria-expanded="false" tabindex="0">
+        <div class="acc-title"><span class="material-icons-outlined">history</span><span>Historique</span></div>
+        <span class="material-icons-outlined acc-chevron" id="accChevron">expand_more</span>
+      </div>
+      <div class="acc-content" id="accContent" aria-hidden="true">
+        <div class="history-list" id="historyList">
+          <!-- Les conversations seront ajoutées ici dynamiquement -->
+        </div>
+      </div>
+    </div>
+
+    <a href="#"><span class="material-icons-outlined">dashboard</span>Tableau de bord</a>
+    <a href="#"><span class="material-icons-outlined">description</span>Documentation</a>
+    <a href="#"><span class="material-icons-outlined">settings</span>Paramètres</a>
+
+    <div class="menu-footer">
+      <div id="g_id_onload"
+           data-client_id="YOUR_GOOGLE_CLIENT_ID"
+           data-context="signin"
+           data-ux_mode="popup"
+           data-callback="onSignIn">
+      </div>
+      <div id="g_id_signin" class="g_id_signin" data-type="standard"></div>
+    </div>
+  </nav>
+
+  <div id="welcome" class="welcome"><strong>Bienvenue sur Starky</strong> 😊</div>
+
+  <div id="chat" class="chat" role="log" aria-live="polite"></div>
+
+  <!-- Notification -->
+  <div id="notification" class="notification"></div>
+
+  <!-- Modal de confirmation -->
+  <div id="confirmModal" class="confirm-modal">
+    <div class="confirm-content">
+      <div class="confirm-title">Confirmer la suppression</div>
+      <div class="confirm-message">Êtes-vous sûr de vouloir supprimer cette conversation ?</div>
+      <div class="confirm-buttons">
+        <button class="confirm-btn cancel" id="cancelDelete">Annuler</button>
+        <button class="confirm-btn delete" id="confirmDelete">Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INPUT WRAPPER -->
+  <div class="input-wrapper">
+    <div class="input-box">
+      <!-- Aperçu média -->
+      <div class="media-preview-container" id="mediaPreview">
+        <img class="media-preview" id="previewImage" src="" alt="Aperçu">
+        <span class="media-preview-name" id="previewName"></span>
+        <button class="media-remove" id="removeMedia" aria-label="Supprimer le média">
+          <span class="material-icons-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Zone de texte -->
+      <div class="input-row">
+        <input id="prompt" type="text" placeholder="Écrire un message..." autocomplete="off" aria-label="Message">
+        <button id="actionBtn" class="send-btn" aria-label="Envoyer">
+          <svg class="icon" id="iconSend" viewBox="0 0 24 24">
+            <path d="M22 2L11 13"/>
+            <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Boutons média et vocal -->
+      <div class="button-row">
+        <button class="media-btn" id="mediaBtn">
+          <span class="material-icons-outlined">attach_file</span>
+          <span>Média</span>
+        </button>
+        <button class="media-btn" id="voiceBtn" disabled title="Chat vocal - Prochainement">
+          <span class="material-icons-outlined">mic</span>
+          <span>Chat vocal</span>
+        </button>
+        <input type="file" id="mediaInput" accept="image/*,video/*,audio/*" multiple>
+      </div>
+    </div>
+  </div>
+
+<!-- Google Identity SDK -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<script>
+  // Définir --vh pour gérer la hauteur visible
+  function setVh() {
+    const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty('--vh', (height * 0.01) + 'px');
+  }
+  setVh();
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', setVh);
+    window.visualViewport.addEventListener('scroll', setVh);
+  } else {
+    window.addEventListener('resize', setVh);
+  }
+
+  const input = document.getElementById('prompt');
+  const chat = document.getElementById('chat');
+  const iconSend = document.getElementById('iconSend');
+  const actionBtn = document.getElementById('actionBtn');
+  const welcome = document.getElementById('welcome');
+  const menuBtn = document.getElementById('menuBtn');
+  const sideMenu = document.getElementById('sideMenu');
+  const overlay = document.getElementById('overlay');
+  const themeBtn = document.getElementById('themeBtn');
+
+  const accHeader = document.getElementById('accHeader');
+  const accContent = document.getElementById('accContent');
+  const accChevron = document.getElementById('accChevron');
+  const historyList = document.getElementById('historyList');
+
+  const mediaBtn = document.getElementById('mediaBtn');
+  const voiceBtn = document.getElementById('voiceBtn');
+  const mediaInput = document.getElementById('mediaInput');
+  const mediaPreview = document.getElementById('mediaPreview');
+  const previewImage = document.getElementById('previewImage');
+  const previewName = document.getElementById('previewName');
+  const removeMedia = document.getElementById('removeMedia');
+
+  const confirmModal = document.getElementById('confirmModal');
+  const cancelDelete = document.getElementById('cancelDelete');
+  const confirmDelete = document.getElementById('confirmDelete');
+
+  let selectedFile = null;
+  let conversationHistory = [];
+  let conversationIdToDelete = null;
+  let currentConversationId = null; // ID de la conversation actuelle
+  let isFirstMessage = true; // Indicateur du premier message
+
+  // Gestion du thème
+  let isDarkMode = true;
+  themeBtn.addEventListener('click', () => {
+    isDarkMode = !isDarkMode;
+    if (isDarkMode) {
+      document.body.classList.remove('light-mode');
+      themeBtn.querySelector('.material-icons-outlined').textContent = 'light_mode';
+    } else {
+      document.body.classList.add('light-mode');
+      themeBtn.querySelector('.material-icons-outlined').textContent = 'dark_mode';
+    }
+  });
+
+  // Ouvrir sélecteur de fichiers
+  mediaBtn.addEventListener('click', () => {
+    mediaInput.click();
+  });
+
+  // Gestion du bouton vocal (inactif pour l'instant)
+  voiceBtn.addEventListener('click', () => {
+    showNotification('Fonctionnalité de chat vocal - Prochainement disponible');
+  });
+
+  // Gestion de la sélection de fichier
+  mediaInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      selectedFile = file;
+
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          previewImage.src = event.target.result;
+          previewImage.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        previewImage.style.display = 'none';
+      }
+
+      previewName.textContent = file.name;
+      mediaPreview.classList.add('active');
+    }
+  });
+
+  // Supprimer le média
+  removeMedia.addEventListener('click', (e) => {
+    e.stopPropagation();
+    selectedFile = null;
+    mediaInput.value = '';
+    mediaPreview.classList.remove('active');
+    previewImage.src = '';
+    previewName.textContent = '';
+  });
+
+  // Mise à jour du style du bouton send
+  input.addEventListener('input', () => {
+    const hasText = input.value.trim().length > 0;
+    actionBtn.style.background = hasText || selectedFile ? '#0ea5e9' : '#333';
+  });
+
+  // Ajouter un message
+  function addMessage(text, sender, fileInfo = null) {
+    if (welcome.style.display !== "none") {
+      welcome.style.opacity = "0";
+      welcome.style.transform = "translateY(-20px)";
+      setTimeout(() => welcome.style.display = "none", 400);
+    }
+    const msg = document.createElement('div');
+    msg.className = 'msg ' + sender;
+
+    if (fileInfo) {
+      msg.textContent = text + ' [Fichier joint: ' + fileInfo + ']';
+    } else {
+      msg.textContent = text;
+    }
+
+    chat.appendChild(msg);
+    requestAnimationFrame(() => {
+      chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+    });
+    return msg;
+  }
+
+  // Ajouter l'indicateur de saisie
+  function addTypingIndicator() {
+    const typing = document.createElement('div');
+    typing.className = 'typing-indicator';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    chat.appendChild(typing);
+    requestAnimationFrame(() => {
+      chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+    });
+    return typing;
+  }
+
+  // Supprimer l'indicateur de saisie
+  function removeTypingIndicator(typingElement) {
+    if (typingElement && typingElement.parentNode) {
+      typingElement.parentNode.removeChild(typingElement);
+    }
+  }
+
+  // Fonction pour créer un item d'historique
+  function createHistoryItem(conversation) {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    item.dataset.id = conversation.id;
+
+    const textSpan = document.createElement('span');
+    textSpan.className = 'history-item-text';
+    textSpan.textContent = conversation.title;
+
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'history-item-actions';
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.setAttribute('aria-label', 'Options');
+    deleteBtn.innerHTML = '<span class="material-icons-outlined">more_vert</span>';
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      conversationIdToDelete = conversation.id;
+      confirmModal.classList.add('active');
+    });
+
+    actionsDiv.appendChild(deleteBtn);
+    item.appendChild(textSpan);
+    item.appendChild(actionsDiv);
+
+    item.addEventListener('click', () => {
+      showNotification('Chargement de: ' + conversation.title);
+      closeMenu();
+    });
+
+    return item;
+  }
+
+  // Mettre à jour l'historique
+  function updateHistoryList() {
+    historyList.innerHTML = '';
+    conversationHistory.forEach(conv => {
+      historyList.appendChild(createHistoryItem(conv));
+    });
+
+    // Ajuster la hauteur du contenu de l'accordéon si ouvert
+    if (accOpen) {
+      accContent.style.maxHeight = accContent.scrollHeight + "px";
+    }
+  }
+
+  // Ajouter une conversation à l'historique (uniquement pour le premier message)
+  function addToHistory(title) {
+    const newConv = {
+      id: Date.now(),
+      title: title,
+      date: new Date()
+    };
+    conversationHistory.unshift(newConv);
+    currentConversationId = newConv.id; // Définir la conversation actuelle
+    updateHistoryList();
+  }
+
+  // Supprimer une conversation
+  function deleteConversation(id) {
+    conversationHistory = conversationHistory.filter(conv => conv.id !== id);
+    updateHistoryList();
+    showNotification('Conversation supprimée');
+  }
+
+  // Gestion de la modal de confirmation
+  cancelDelete.addEventListener('click', () => {
+    confirmModal.classList.remove('active');
+    conversationIdToDelete = null;
+  });
+
+  confirmDelete.addEventListener('click', () => {
+    if (conversationIdToDelete !== null) {
+      deleteConversation(conversationIdToDelete);
+      conversationIdToDelete = null;
+    }
+    confirmModal.classList.remove('active');
+  });
+
+  // Fermer la modal en cliquant à l'extérieur
+  confirmModal.addEventListener('click', (e) => {
+    if (e.target === confirmModal) {
+      confirmModal.classList.remove('active');
+      conversationIdToDelete = null;
+    }
+  });
+
+  // Envoyer un message
+  actionBtn.addEventListener('click', () => {
+    const text = input.value.trim();
+    if (!text && !selectedFile) return;
+
+    const fileInfo = selectedFile ? selectedFile.name : null;
+    addMessage(text || 'Fichier envoyé', 'user', fileInfo);
+
+    // Sauvegarder dans l'historique UNIQUEMENT si c'est le premier message de la conversation
+    if (isFirstMessage && text) {
+      addToHistory(text.substring(0, 30) + (text.length > 30 ? '...' : ''));
+      isFirstMessage = false; // Les prochains messages ne créeront pas de nouvelle conversation
+    }
+
+    input.value = '';
+    selectedFile = null;
+    mediaInput.value = '';
+    mediaPreview.classList.remove('active');
+    previewImage.src = '';
+    previewName.textContent = '';
+    input.dispatchEvent(new Event('input'));
+
+    const typingIndicator = addTypingIndicator();
+
+    setTimeout(() => {
+      removeTypingIndicator(typingIndicator);
+      addMessage("Réponse de Starky : " + (text || 'Fichier reçu'), 'bot');
+    }, 1500);
+  });
+
+  // Support Enter
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      actionBtn.click();
+    }
+  });
+
+  // Fonction pour fermer le menu
+  function closeMenu() {
+    sideMenu.classList.remove('active');
+    sideMenu.setAttribute('aria-hidden', 'true');
+    overlay.classList.remove('active');
+  }
+
+  // Ouvrir le menu
+  menuBtn.addEventListener('click', () => {
+    sideMenu.classList.add('active');
+    sideMenu.setAttribute('aria-hidden', 'false');
+    overlay.classList.add('active');
+    overlay.focus();
+  });
+
+  // Fermer le menu via overlay
+  overlay.addEventListener('click', closeMenu);
+
+  // Fermer avec Échap
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (confirmModal.classList.contains('active')) {
+        confirmModal.classList.remove('active');
+        conversationIdToDelete = null;
+      } else if (sideMenu.classList.contains('active')) {
+        closeMenu();
+      }
+    }
+  });
+
+  // Accordéon Historique
+  let accOpen = false;
+  function toggleAcc() {
+    accOpen = !accOpen;
+    if (accOpen) {
+      accContent.style.maxHeight = accContent.scrollHeight + "px";
+      accChevron.style.transform = "rotate(180deg)";
+      accHeader.setAttribute('aria-expanded', 'true');
+      accContent.setAttribute('aria-hidden', 'false');
+    } else {
+      accContent.style.maxHeight = "0";
+      accChevron.style.transform = "rotate(0deg)";
+      accHeader.setAttribute('aria-expanded', 'false');
+      accContent.setAttribute('aria-hidden', 'true');
+    }
+  }
+  accHeader.addEventListener('click', toggleAcc);
+  accHeader.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleAcc();
+    }
+  });
+
+  // New Chat - Réinitialise la conversation
+  const newChatLink = document.getElementById('newChatLink');
+  newChatLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    chat.innerHTML = '';
+    welcome.style.display = 'block';
+    welcome.style.opacity = '1';
+    welcome.style.transform = 'translateY(0)';
+    isFirstMessage = true; // Réinitialiser pour une nouvelle conversation
+    currentConversationId = null; // Pas de conversation active
+    closeMenu();
+  });
+
+  // Notification
+  function showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.classList.add('show');
+    setTimeout(() => {
+      notification.classList.remove('show');
+    }, 3000);
+  }
+
+  // Callback Google Login
+  function onSignIn(response) {
+    try {
+      const userData = jwt_decode(response.credential);
+      showNotification("Connecté en tant que : " + (userData.email || 'inconnu'));
+    } catch (err) {
+      console.error('Erreur décodage JWT', err);
+    }
+  }
+
+  window.onSignIn = onSignIn;
+
+  // Ajustement clavier
+  function adjustForKeyboard() {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const viewportHeight = vv.height;
+    const fullHeight = window.innerHeight;
+    const keyboardHeight = Math.max(0, fullHeight - viewportHeight);
+    const inputWrapper = document.querySelector('.input-wrapper');
+    if (keyboardHeight > 150) {
+      inputWrapper.style.bottom = (keyboardHeight + 10) + 'px';
+      const chatEl = document.getElementById('chat');
+      chatEl.style.bottom = (keyboardHeight + 70) + 'px';
+    } else {
+      inputWrapper.style.bottom = '15px';
+      const chatEl = document.getElementById('chat');
+      chatEl.style.bottom = '140px';
+    }
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      setVh();
+      adjustForKeyboard();
+    });
+    window.visualViewport.addEventListener('scroll', adjustForKeyboard);
+  } else {
+    window.addEventListener('resize', () => {
+      setVh();
+      adjustForKeyboard();
+    });
+  }
+
+  // Initialiser avec quelques conversations de test
+  function initializeTestData() {
+    const testConversations = [
+      'Comment créer une application web ?',
+      'Explique-moi React',
+      'Qu\'est-ce que le machine learning ?',
+      'Comment optimiser mon code ?',
+      'Tutoriel Python pour débutants'
+    ];
+
+    testConversations.forEach((title, index) => {
+      conversationHistory.push({
+        id: Date.now() + index,
+        title: title,
+        date: new Date()
+      });
+    });
+
+    updateHistoryList();
+  }
+
+  // Initialiser les données de test au chargement
+  initializeTestData();
+</script>
+
+<!-- Décodage JWT -->
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+</body>
+</html>
+

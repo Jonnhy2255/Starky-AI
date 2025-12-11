@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no">
 <title>Interface IA - Starky</title>
 
 <!-- Import Google Fonts et Material Icons -->
@@ -74,6 +74,12 @@
     user-drag: none;
   }
 
+  html {
+    /* Empêcher le zoom et le déplacement */
+    touch-action: pan-x pan-y;
+    -ms-touch-action: pan-x pan-y;
+  }
+
   body {
     margin: 0;
     background: var(--bg-primary);
@@ -82,6 +88,11 @@
     height: calc(var(--vh) * 100);
     overflow: hidden;
     transition: background 0.3s ease, color 0.3s ease;
+    /* Empêcher le zoom et le déplacement */
+    touch-action: pan-x pan-y;
+    -ms-touch-action: pan-x pan-y;
+    position: fixed;
+    width: 100%;
   }
 
   /* HEADER */
@@ -100,6 +111,7 @@
     border-bottom: 1px solid var(--border-color);
     z-index: 100;
     transition: background 0.3s ease, border-color 0.3s ease;
+    touch-action: none;
   }
 
   .btn {
@@ -113,6 +125,7 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
+    touch-action: manipulation;
   }
 
   .btn:hover {
@@ -195,6 +208,7 @@
     transition: background 0.2s, color 0.2s;
     border-radius: 8px;
     margin: 6px 8px;
+    touch-action: manipulation;
   }
 
   .menu a:hover {
@@ -231,6 +245,7 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
+    touch-action: manipulation;
   }
 
   .connect-btn:hover {
@@ -243,12 +258,22 @@
     transform: translateY(0);
   }
 
-  /* Informations utilisateur connecté */
+  /* Informations utilisateur connecté - UNE SEULE LIGNE SANS BOUTON */
   .user-connected {
     display: none;
-    flex-direction: column;
-    gap: 10px;
-    padding: 8px;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--hover-bg);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    touch-action: manipulation;
+  }
+
+  .user-connected:hover {
+    background: rgba(255,255,255,0.08);
   }
 
   .user-connected.active {
@@ -256,54 +281,35 @@
   }
 
   .user-avatar {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--accent-color), #0284c7);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 16px;
     font-weight: 700;
     color: #fff;
-    margin: 0 auto;
+    flex-shrink: 0;
   }
 
-  .user-details {
-    text-align: center;
+  .user-info {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
-  .user-name {
+  .user-display-name {
     color: var(--text-primary);
     font-weight: 600;
-    font-size: 15px;
-    margin-bottom: 4px;
+    font-size: 14px;
     transition: color 0.3s;
-  }
-
-  .user-email {
-    color: var(--text-tertiary);
-    font-size: 12px;
-    transition: color 0.3s;
-  }
-
-  .disconnect-btn {
-    width: 100%;
-    padding: 10px 16px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    color: var(--text-primary);
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'Space Grotesk', sans-serif;
-  }
-
-  .disconnect-btn:hover {
-    background: var(--hover-bg);
-    border-color: #ff4444;
-    color: #ff4444;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* MODAL D'AUTHENTIFICATION */
@@ -374,6 +380,7 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
+    touch-action: manipulation;
   }
 
   .close-auth:hover {
@@ -409,6 +416,7 @@
     transition: all 0.2s;
     font-family: 'Space Grotesk', sans-serif;
     position: relative;
+    touch-action: manipulation;
   }
 
   .tab-btn:hover {
@@ -483,6 +491,7 @@
     transition: all 0.2s;
     font-family: 'Space Grotesk', sans-serif;
     margin-top: 8px;
+    touch-action: manipulation;
   }
 
   .submit-btn:hover {
@@ -501,6 +510,48 @@
     color: var(--text-tertiary);
     font-size: 13px;
     transition: color 0.3s;
+  }
+
+  /* Menu contextuel de déconnexion */
+  .user-menu {
+    position: fixed;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    z-index: 300;
+    display: none;
+    min-width: 180px;
+  }
+
+  .user-menu.active {
+    display: block;
+  }
+
+  .user-menu-item {
+    padding: 10px 16px;
+    color: var(--text-primary);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    touch-action: manipulation;
+  }
+
+  .user-menu-item:hover {
+    background: var(--hover-bg);
+  }
+
+  .user-menu-item.danger {
+    color: #ff4444;
+  }
+
+  .user-menu-item.danger:hover {
+    background: rgba(255, 68, 68, 0.1);
   }
 
   /* HISTORIQUE (accordéon) */
@@ -522,6 +573,7 @@
     cursor: pointer;
     user-select: none;
     transition: background 0.15s, color 0.3s;
+    touch-action: manipulation;
   }
 
   .acc-header:hover {
@@ -587,6 +639,7 @@
     transition: background 0.2s, color 0.2s;
     position: relative;
     cursor: pointer;
+    touch-action: manipulation;
   }
 
   .history-item:hover {
@@ -618,6 +671,7 @@
     color: var(--text-tertiary);
     transition: color 0.2s, transform 0.2s;
     border-radius: 4px;
+    touch-action: manipulation;
   }
 
   .delete-btn:hover {
@@ -655,6 +709,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    touch-action: pan-y;
   }
 
   /* Scrollbar personnalisée pour le chat */
@@ -750,6 +805,7 @@
     justify-content: center;
     padding: 0 12px;
     z-index: 150;
+    touch-action: none;
   }
 
   /* INPUT BOX */
@@ -814,6 +870,7 @@
     align-items: center;
     justify-content: center;
     transition: transform 0.2s;
+    touch-action: manipulation;
   }
 
   .media-remove:hover {
@@ -860,6 +917,7 @@
     cursor: pointer;
     transition: background 0.3s, transform 0.2s;
     flex-shrink: 0;
+    touch-action: manipulation;
   }
 
   .send-btn:active {
@@ -898,6 +956,7 @@
     padding: 6px 10px;
     border-radius: 8px;
     transition: background 0.2s, color 0.2s;
+    touch-action: manipulation;
   }
 
   .media-btn:hover:not(:disabled) {
@@ -995,6 +1054,7 @@
     font-weight: 600;
     font-size: 14px;
     transition: all 0.2s;
+    touch-action: manipulation;
   }
 
   .confirm-btn.cancel {
@@ -1067,17 +1127,27 @@
         <span>Se connecter</span>
       </button>
 
-      <!-- Informations utilisateur (affiché si connecté) -->
+      <!-- Informations utilisateur (affiché si connecté) - UNE SEULE LIGNE SANS BOUTON -->
       <div class="user-connected" id="userConnected">
         <div class="user-avatar" id="userAvatar">JS</div>
-        <div class="user-details">
-          <div class="user-name" id="userName"></div>
-          <div class="user-email" id="userEmail"></div>
+        <div class="user-info">
+          <div class="user-display-name" id="userDisplayName">john.doe@example.com</div>
         </div>
-        <button class="disconnect-btn" id="disconnectBtn">Se déconnecter</button>
       </div>
     </div>
   </nav>
+
+  <!-- Menu contextuel de l'utilisateur -->
+  <div class="user-menu" id="userMenu">
+    <div class="user-menu-item" id="profileMenuItem">
+      <span class="material-icons-outlined" style="font-size: 18px;">person</span>
+      <span>Profil</span>
+    </div>
+    <div class="user-menu-item danger" id="disconnectMenuItem">
+      <span class="material-icons-outlined" style="font-size: 18px;">logout</span>
+      <span>Se déconnecter</span>
+    </div>
+  </div>
 
   <!-- MODAL D'AUTHENTIFICATION -->
   <div class="auth-modal" id="authModal">
@@ -1239,6 +1309,29 @@
     }
   }, false);
 
+  // Empêcher le zoom par double-tap
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', function(e) {
+    const now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, false);
+
+  // Empêcher le zoom par pinch
+  document.addEventListener('gesturestart', function(e) {
+    e.preventDefault();
+  });
+
+  document.addEventListener('gesturechange', function(e) {
+    e.preventDefault();
+  });
+
+  document.addEventListener('gestureend', function(e) {
+    e.preventDefault();
+  });
+
   // ===========================
   // VARIABLES GLOBALES
   // ===========================
@@ -1289,10 +1382,11 @@
   const loginForm = document.getElementById('loginForm');
   const registerForm = document.getElementById('registerForm');
   const userConnected = document.getElementById('userConnected');
-  const userName = document.getElementById('userName');
-  const userEmail = document.getElementById('userEmail');
+  const userDisplayName = document.getElementById('userDisplayName');
   const userAvatar = document.getElementById('userAvatar');
-  const disconnectBtn = document.getElementById('disconnectBtn');
+  const userMenu = document.getElementById('userMenu');
+  const disconnectMenuItem = document.getElementById('disconnectMenuItem');
+  const profileMenuItem = document.getElementById('profileMenuItem');
 
   let selectedFile = null;
   let conversationHistory = [];
@@ -1443,11 +1537,22 @@
 
       // Afficher les infos utilisateur
       userConnected.classList.add('active');
-      userName.textContent = `${currentUser.firstName} ${currentUser.lastName}`;
-      userEmail.textContent = currentUser.email;
+
+      // Afficher soit le nom complet, soit l'email
+      const displayText = currentUser.firstName && currentUser.lastName
+        ? `${currentUser.firstName} ${currentUser.lastName}`
+        : currentUser.email;
+
+      userDisplayName.textContent = displayText;
 
       // Avatar avec initiales
-      const initials = currentUser.firstName.charAt(0) + currentUser.lastName.charAt(0);
+      let initials;
+      if (currentUser.firstName && currentUser.lastName) {
+        initials = currentUser.firstName.charAt(0) + currentUser.lastName.charAt(0);
+      } else {
+        // Si pas de nom, utiliser les 2 premières lettres de l'email
+        initials = currentUser.email.substring(0, 2);
+      }
       userAvatar.textContent = initials.toUpperCase();
     } else {
       // Afficher le bouton de connexion
@@ -1458,11 +1563,34 @@
     }
   }
 
+  // Gestion du menu contextuel utilisateur
+  userConnected.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const rect = userConnected.getBoundingClientRect();
+    userMenu.style.left = rect.left + 'px';
+    userMenu.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
+    userMenu.classList.toggle('active');
+  });
+
+  // Fermer le menu utilisateur en cliquant ailleurs
+  document.addEventListener('click', function(e) {
+    if (!userMenu.contains(e.target) && !userConnected.contains(e.target)) {
+      userMenu.classList.remove('active');
+    }
+  });
+
   // Déconnexion
-  disconnectBtn.addEventListener('click', function() {
+  disconnectMenuItem.addEventListener('click', function() {
     currentUser = null;
     updateUserDisplay();
+    userMenu.classList.remove('active');
     showNotification('Déconnexion réussie');
+  });
+
+  // Profil
+  profileMenuItem.addEventListener('click', function() {
+    userMenu.classList.remove('active');
+    showNotification('Profil - Fonctionnalité à venir');
   });
 
   // ===========================
@@ -1744,6 +1872,8 @@
         conversationIdToDelete = null;
       } else if (sideMenu.classList.contains('active')) {
         closeMenu();
+      } else if (userMenu.classList.contains('active')) {
+        userMenu.classList.remove('active');
       }
     }
   });

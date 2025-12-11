@@ -1,1250 +1,1881 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Interface IA - Starky</title>
-
-<!-- Import Google Fonts et Material Icons -->
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
-
-<style>
-  :root {
-    --vh: 1vh;
-
-    /* Variables pour thème sombre */
-    --bg-primary: #0a0a0a;
-    --bg-secondary: #111;
-    --bg-tertiary: #1a1a1a;
-    --text-primary: #fff;
-    --text-secondary: #ccc;
-    --text-tertiary: #999;
-    --border-color: #222;
-    --accent-color: #0ea5e9;
-    --hover-bg: rgba(255,255,255,0.05);
-    --user-msg-bg: #0ea5e9;
-    --bot-msg-bg: #111;
-    --overlay-bg: rgba(0,0,0,0.35);
-    --input-bg: #111;
-  }
-
-  /* Thème clair */
-  body.light-mode {
-    --bg-primary: #f8f9fa;
-    --bg-secondary: #ffffff;
-    --bg-tertiary: #f1f3f5;
-    --text-primary: #1a1a1a;
-    --text-secondary: #4a5568;
-    --text-tertiary: #718096;
-    --border-color: #e2e8f0;
-    --accent-color: #0ea5e9;
-    --hover-bg: rgba(0,0,0,0.05);
-    --user-msg-bg: #0ea5e9;
-    --bot-msg-bg: #f1f3f5;
-    --overlay-bg: rgba(0,0,0,0.25);
-    --input-bg: #ffffff;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  body {
-    margin: 0;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-family: 'Space Grotesk', system-ui, sans-serif;
-    height: calc(var(--vh) * 100);
-    overflow: hidden;
-    transition: background 0.3s ease, color 0.3s ease;
-  }
-
-  /* HEADER */
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background: var(--bg-secondary);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border-color);
-    z-index: 100;
-    transition: background 0.3s ease, border-color 0.3s ease;
-  }
-
-  .btn {
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .btn:hover {
-    background: var(--hover-bg);
-    transform: scale(1.05);
-  }
-
-  .btn .material-icons-outlined {
-    font-size: 22px;
-    color: var(--text-primary);
-    transition: color 0.3s ease;
-  }
-
-  .ia-name {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: 25px;
-    padding: 8px 18px;
-    font-weight: 700;
-    font-size: 15px;
-    color: var(--accent-color);
-    text-align: center;
-    transition: all 0.3s ease;
-  }
-
-  /* OVERLAY */
-  .overlay {
-    position: fixed;
-    inset: 0;
-    background: var(--overlay-bg);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease;
-    z-index: 190;
-  }
-  .overlay.active {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  /* MENU MODERNE */
-  .menu {
-    position: fixed;
-    top: 0;
-    left: -260px;
-    width: 260px;
-    height: 100%;
-    background: var(--bg-secondary);
-    backdrop-filter: blur(10px);
-    transition: left 0.28s ease, background 0.3s ease;
-    border-right: 1px solid var(--border-color);
-    z-index: 200;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .menu.active { left: 0; }
-
-  .menu-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 18px 12px;
-    font-weight: 700;
-    font-size: 17px;
-    color: var(--accent-color);
-    gap: 8px;
-    flex-shrink: 0;
-  }
-
-  .menu a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--text-secondary);
-    text-decoration: none;
-    padding: 10px 14px;
-    font-size: 15px;
-    transition: background 0.2s, color 0.2s;
-    border-radius: 8px;
-    margin: 6px 8px;
-  }
-
-  .menu a:hover {
-    background: var(--accent-color);
-    color: #fff;
-  }
-
-  .menu a .material-icons-outlined {
-    font-size: 20px;
-  }
-
-  .menu-footer {
-    margin-top: auto;
-    padding: 12px;
-    border-top: 1px solid var(--border-color);
-    text-align: center;
-    flex-shrink: 0;
-  }
-
-  #g_id_signin {
-    display: inline-block;
-  }
-
-  /* HISTORIQUE (accordéon) */
-  .accordion {
-    margin: 6px 8px;
-    border-radius: 8px;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-
-  .acc-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 10px 14px;
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    user-select: none;
-    transition: background 0.15s, color 0.3s;
-  }
-
-  .acc-header:hover {
-    background: var(--hover-bg);
-  }
-
-  .acc-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 15px;
-  }
-
-  .acc-chevron {
-    transition: transform 0.2s ease, color 0.3s ease;
-    color: var(--text-secondary);
-  }
-
-  .acc-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.28s ease;
-    background: var(--hover-bg);
-  }
-
-  /* Conteneur avec scroll pour l'historique */
-  .history-list {
-    max-height: 200px;
-    overflow-y: auto;
-    padding: 4px 0;
-    padding-left: 46px;
-  }
-
-  /* Scrollbar personnalisée */
-  .history-list::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .history-list::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .history-list::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 3px;
-  }
-
-  .history-list::-webkit-scrollbar-thumb:hover {
-    background: var(--text-tertiary);
-  }
-
-  /* Item d'historique avec bouton trois points */
-  .history-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 14px 8px 0;
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-size: 14px;
-    border-radius: 6px;
-    margin: 6px 8px 6px 0;
-    transition: background 0.2s, color 0.2s;
-    position: relative;
-    cursor: pointer;
-  }
-
-  .history-item:hover {
-    background: var(--hover-bg);
-    color: var(--text-primary);
-  }
-
-  .history-item-text {
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .history-item-actions {
-    opacity: 1; /* Toujours visible */
-    display: flex;
-    align-items: center;
-  }
-
-  .delete-btn {
-    background: transparent;
-    border: none;
-    padding: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-tertiary);
-    transition: color 0.2s, transform 0.2s;
-    border-radius: 4px;
-  }
-
-  .delete-btn:hover {
-    color: var(--accent-color);
-    background: var(--hover-bg);
-    transform: scale(1.1);
-  }
-
-  .delete-btn .material-icons-outlined {
-    font-size: 18px;
-  }
-
-  /* WELCOME */
-  .welcome {
-    position: absolute;
-    top: 85px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 18px;
-    color: var(--text-secondary);
-    font-weight: 700;
-    transition: opacity 0.4s ease, transform 0.4s ease, color 0.3s ease;
-  }
-
-  /* CHAT */
-  .chat {
-    position: absolute;
-    top: 95px;
-    bottom: 140px;
-    left: 0;
-    right: 0;
-    overflow-y: auto;
-    padding: 0 15px 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  /* Scrollbar personnalisée pour le chat */
-  .chat::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  .chat::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .chat::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 4px;
-  }
-
-  .chat::-webkit-scrollbar-thumb:hover {
-    background: var(--text-tertiary);
-  }
-
-  .msg {
-    max-width: 80%;
-    padding: 10px 14px;
-    border-radius: 18px;
-    word-wrap: break-word;
-    font-size: 14px;
-    transition: background 0.3s ease, color 0.3s ease;
-  }
-
-  .user {
-    align-self: flex-end;
-    background: var(--user-msg-bg);
-    color: #fff;
-    border-bottom-right-radius: 4px;
-  }
-
-  .bot {
-    align-self: flex-start;
-    background: var(--bot-msg-bg);
-    color: var(--text-primary);
-    border-bottom-left-radius: 4px;
-  }
-
-  /* ANIMATION DES TROIS POINTS */
-  .typing-indicator {
-    align-self: flex-start;
-    background: var(--bot-msg-bg);
-    color: var(--text-primary);
-    border-radius: 18px;
-    border-bottom-left-radius: 4px;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    transition: background 0.3s ease;
-  }
-
-  .typing-indicator span {
-    width: 8px;
-    height: 8px;
-    background: var(--accent-color);
-    border-radius: 50%;
-    display: inline-block;
-    animation: typing 1.4s infinite;
-  }
-
-  .typing-indicator span:nth-child(2) {
-    animation-delay: 0.2s;
-  }
-
-  .typing-indicator span:nth-child(3) {
-    animation-delay: 0.4s;
-  }
-
-  @keyframes typing {
-    0%, 60%, 100% {
-      transform: translateY(0);
-      opacity: 0.5;
-    }
-    30% {
-      transform: translateY(-10px);
-      opacity: 1;
-    }
-  }
-
-  /* INPUT WRAPPER */
-  .input-wrapper {
-    position: fixed;
-    bottom: 15px;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    padding: 0 12px;
-    z-index: 150;
-  }
-
-  /* INPUT BOX */
-  .input-box {
-    width: 100%;
-    max-width: 560px;
-    background: var(--input-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    transition: background 0.3s ease, border-color 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  }
-
-  body.light-mode .input-box {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  }
-
-  /* Aperçu média */
-  .media-preview-container {
-    display: none;
-    align-items: center;
-    gap: 8px;
-    padding: 8px;
-    background: var(--hover-bg);
-    border-radius: 10px;
-    transition: background 0.3s ease;
-  }
-
-  .media-preview-container.active {
-    display: flex;
-  }
-
-  .media-preview {
-    width: 40px;
-    height: 40px;
-    object-fit: cover;
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
-  }
-
-  .media-preview-name {
-    font-size: 12px;
-    color: var(--text-tertiary);
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    transition: color 0.3s ease;
-  }
-
-  .media-remove {
-    background: transparent;
-    border: none;
-    color: #ff4444;
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s;
-  }
-
-  .media-remove:hover {
-    transform: scale(1.1);
-  }
-
-  .media-remove .material-icons-outlined {
-    font-size: 20px;
-  }
-
-  /* Zone de texte */
-  .input-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .input-row input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--text-primary);
-    font-size: 16px;
-    outline: none;
-    transition: color 0.3s ease;
-  }
-
-  .input-row input::placeholder {
-    color: var(--text-tertiary);
-    transition: color 0.3s ease;
-  }
-
-  /* Bouton envoyer */
-  .send-btn {
-    background: #333;
-    border: none;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
-    flex-shrink: 0;
-  }
-
-  .send-btn:active {
-    transform: scale(0.95);
-  }
-
-  .icon {
-    width: 20px;
-    height: 20px;
-    fill: none;
-    stroke: #fff;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  /* Boutons média et vocal */
-  .button-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding-top: 4px;
-    border-top: 1px solid var(--border-color);
-    transition: border-color 0.3s ease;
-  }
-
-  .media-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-tertiary);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    padding: 6px 10px;
-    border-radius: 8px;
-    transition: background 0.2s, color 0.2s;
-  }
-
-  .media-btn:hover:not(:disabled) {
-    background: var(--hover-bg);
-    color: var(--text-primary);
-  }
-
-  .media-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  .media-btn .material-icons-outlined {
-    font-size: 18px;
-  }
-
-  #mediaInput {
-    display: none;
-  }
-
-  /* Notification */
-  .notification {
-    position: fixed;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--bg-secondary);
-    border: 1px solid var(--accent-color);
-    color: var(--text-primary);
-    padding: 12px 24px;
-    border-radius: 12px;
-    z-index: 300;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease, background 0.3s ease, color 0.3s ease;
-  }
-
-  .notification.show {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  /* Modal de confirmation */
-  .confirm-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 400;
-  }
-
-  .confirm-modal.active {
-    display: flex;
-  }
-
-  .confirm-content {
-    background: var(--bg-secondary);
-    padding: 24px;
-    border-radius: 16px;
-    max-width: 400px;
-    width: 90%;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-    transition: background 0.3s ease, border-color 0.3s ease;
-  }
-
-  .confirm-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 12px;
-    transition: color 0.3s ease;
-  }
-
-  .confirm-message {
-    color: var(--text-secondary);
-    margin-bottom: 24px;
-    transition: color 0.3s ease;
-  }
-
-  .confirm-buttons {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-  }
-
-  .confirm-btn {
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.2s;
-  }
-
-  .confirm-btn.cancel {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-  }
-
-  .confirm-btn.cancel:hover {
-    background: var(--hover-bg);
-  }
-
-  .confirm-btn.delete {
-    background: #ff4444;
-    color: #fff;
-  }
-
-  .confirm-btn.delete:hover {
-    background: #cc0000;
-  }
-
-  /* Responsive */
-  @media (max-width: 420px) {
-    .menu { width: 240px; left: -240px; }
-    .input-box { max-width: 420px; }
-  }
-</style>
-</head>
-<body>
-
-  <!-- HEADER -->
-  <div class="header">
-    <button class="btn" id="menuBtn" aria-label="Ouvrir le menu"><span class="material-icons-outlined">menu</span></button>
-    <div class="ia-name">Starky</div>
-    <button class="btn" id="themeBtn" aria-label="Thème"><span class="material-icons-outlined">light_mode</span></button>
-  </div>
-
-  <!-- OVERLAY -->
-  <div id="overlay" class="overlay" tabindex="-1"></div>
-
-  <!-- MENU MODERNE -->
-  <nav class="menu" id="sideMenu" aria-hidden="true" aria-label="Menu principal">
-    <div class="menu-header">
-      <span class="material-icons-outlined">chat</span>
-      <span style="font-weight:700;">Starky</span>
-    </div>
-
-    <a href="#" id="newChatLink"><span class="material-icons-outlined">chat</span>New Chat</a>
-
-    <div class="accordion" id="historyAcc">
-      <div class="acc-header" id="accHeader" role="button" aria-expanded="false" tabindex="0">
-        <div class="acc-title"><span class="material-icons-outlined">history</span><span>Historique</span></div>
-        <span class="material-icons-outlined acc-chevron" id="accChevron">expand_more</span>
-      </div>
-      <div class="acc-content" id="accContent" aria-hidden="true">
-        <div class="history-list" id="historyList">
-          <!-- Les conversations seront ajoutées ici dynamiquement -->
-        </div>
-      </div>
-    </div>
-
-    <a href="#"><span class="material-icons-outlined">dashboard</span>Tableau de bord</a>
-    <a href="#"><span class="material-icons-outlined">description</span>Documentation</a>
-    <a href="#"><span class="material-icons-outlined">settings</span>Paramètres</a>
-
-    <div class="menu-footer">
-      <div id="g_id_onload"
-           data-client_id="YOUR_GOOGLE_CLIENT_ID"
-           data-context="signin"
-           data-ux_mode="popup"
-           data-callback="onSignIn">
-      </div>
-      <div id="g_id_signin" class="g_id_signin" data-type="standard"></div>
-    </div>
-  </nav>
-
-  <div id="welcome" class="welcome"><strong>Bienvenue sur Starky</strong> 😊</div>
-
-  <div id="chat" class="chat" role="log" aria-live="polite"></div>
-
-  <!-- Notification -->
-  <div id="notification" class="notification"></div>
-
-  <!-- Modal de confirmation -->
-  <div id="confirmModal" class="confirm-modal">
-    <div class="confirm-content">
-      <div class="confirm-title">Confirmer la suppression</div>
-      <div class="confirm-message">Êtes-vous sûr de vouloir supprimer cette conversation ?</div>
-      <div class="confirm-buttons">
-        <button class="confirm-btn cancel" id="cancelDelete">Annuler</button>
-        <button class="confirm-btn delete" id="confirmDelete">Supprimer</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- INPUT WRAPPER -->
-  <div class="input-wrapper">
-    <div class="input-box">
-      <!-- Aperçu média -->
-      <div class="media-preview-container" id="mediaPreview">
-        <img class="media-preview" id="previewImage" src="" alt="Aperçu">
-        <span class="media-preview-name" id="previewName"></span>
-        <button class="media-remove" id="removeMedia" aria-label="Supprimer le média">
-          <span class="material-icons-outlined">close</span>
-        </button>
-      </div>
-
-      <!-- Zone de texte -->
-      <div class="input-row">
-        <input id="prompt" type="text" placeholder="Écrire un message..." autocomplete="off" aria-label="Message">
-        <button id="actionBtn" class="send-btn" aria-label="Envoyer">
-          <svg class="icon" id="iconSend" viewBox="0 0 24 24">
-            <path d="M22 2L11 13"/>
-            <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Boutons média et vocal -->
-      <div class="button-row">
-        <button class="media-btn" id="mediaBtn">
-          <span class="material-icons-outlined">attach_file</span>
-          <span>Média</span>
-        </button>
-        <button class="media-btn" id="voiceBtn" disabled title="Chat vocal - Prochainement">
-          <span class="material-icons-outlined">mic</span>
-          <span>Chat vocal</span>
-        </button>
-        <input type="file" id="mediaInput" accept="image/*,video/*,audio/*" multiple>
-      </div>
-    </div>
-  </div>
-
-<!-- Google Identity SDK -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-
-<script>
-  // Définir --vh pour gérer la hauteur visible
-  function setVh() {
-    const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    document.documentElement.style.setProperty('--vh', (height * 0.01) + 'px');
-  }
-  setVh();
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', setVh);
-    window.visualViewport.addEventListener('scroll', setVh);
-  } else {
-    window.addEventListener('resize', setVh);
-  }
-
-  const input = document.getElementById('prompt');
-  const chat = document.getElementById('chat');
-  const iconSend = document.getElementById('iconSend');
-  const actionBtn = document.getElementById('actionBtn');
-  const welcome = document.getElementById('welcome');
-  const menuBtn = document.getElementById('menuBtn');
-  const sideMenu = document.getElementById('sideMenu');
-  const overlay = document.getElementById('overlay');
-  const themeBtn = document.getElementById('themeBtn');
-
-  const accHeader = document.getElementById('accHeader');
-  const accContent = document.getElementById('accContent');
-  const accChevron = document.getElementById('accChevron');
-  const historyList = document.getElementById('historyList');
-
-  const mediaBtn = document.getElementById('mediaBtn');
-  const voiceBtn = document.getElementById('voiceBtn');
-  const mediaInput = document.getElementById('mediaInput');
-  const mediaPreview = document.getElementById('mediaPreview');
-  const previewImage = document.getElementById('previewImage');
-  const previewName = document.getElementById('previewName');
-  const removeMedia = document.getElementById('removeMedia');
-
-  const confirmModal = document.getElementById('confirmModal');
-  const cancelDelete = document.getElementById('cancelDelete');
-  const confirmDelete = document.getElementById('confirmDelete');
-
-  let selectedFile = null;
-  let conversationHistory = [];
-  let conversationIdToDelete = null;
-  let currentConversationId = null; // ID de la conversation actuelle
-  let isFirstMessage = true; // Indicateur du premier message
-
-  // Gestion du thème
-  let isDarkMode = true;
-  themeBtn.addEventListener('click', () => {
-    isDarkMode = !isDarkMode;
-    if (isDarkMode) {
-      document.body.classList.remove('light-mode');
-      themeBtn.querySelector('.material-icons-outlined').textContent = 'light_mode';
-    } else {
-      document.body.classList.add('light-mode');
-      themeBtn.querySelector('.material-icons-outlined').textContent = 'dark_mode';
-    }
-  });
-
-  // Ouvrir sélecteur de fichiers
-  mediaBtn.addEventListener('click', () => {
-    mediaInput.click();
-  });
-
-  // Gestion du bouton vocal (inactif pour l'instant)
-  voiceBtn.addEventListener('click', () => {
-    showNotification('Fonctionnalité de chat vocal - Prochainement disponible');
-  });
-
-  // Gestion de la sélection de fichier
-  mediaInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      selectedFile = file;
-
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          previewImage.src = event.target.result;
-          previewImage.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-      } else {
-        previewImage.style.display = 'none';
-      }
-
-      previewName.textContent = file.name;
-      mediaPreview.classList.add('active');
-    }
-  });
-
-  // Supprimer le média
-  removeMedia.addEventListener('click', (e) => {
-    e.stopPropagation();
-    selectedFile = null;
-    mediaInput.value = '';
-    mediaPreview.classList.remove('active');
-    previewImage.src = '';
-    previewName.textContent = '';
-  });
-
-  // Mise à jour du style du bouton send
-  input.addEventListener('input', () => {
-    const hasText = input.value.trim().length > 0;
-    actionBtn.style.background = hasText || selectedFile ? '#0ea5e9' : '#333';
-  });
-
-  // Ajouter un message
-  function addMessage(text, sender, fileInfo = null) {
-    if (welcome.style.display !== "none") {
-      welcome.style.opacity = "0";
-      welcome.style.transform = "translateY(-20px)";
-      setTimeout(() => welcome.style.display = "none", 400);
-    }
-    const msg = document.createElement('div');
-    msg.className = 'msg ' + sender;
-
-    if (fileInfo) {
-      msg.textContent = text + ' [Fichier joint: ' + fileInfo + ']';
-    } else {
-      msg.textContent = text;
-    }
-
-    chat.appendChild(msg);
-    requestAnimationFrame(() => {
-      chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
-    });
-    return msg;
-  }
-
-  // Ajouter l'indicateur de saisie
-  function addTypingIndicator() {
-    const typing = document.createElement('div');
-    typing.className = 'typing-indicator';
-    typing.innerHTML = '<span></span><span></span><span></span>';
-    chat.appendChild(typing);
-    requestAnimationFrame(() => {
-      chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
-    });
-    return typing;
-  }
-
-  // Supprimer l'indicateur de saisie
-  function removeTypingIndicator(typingElement) {
-    if (typingElement && typingElement.parentNode) {
-      typingElement.parentNode.removeChild(typingElement);
-    }
-  }
-
-  // Fonction pour créer un item d'historique
-  function createHistoryItem(conversation) {
-    const item = document.createElement('div');
-    item.className = 'history-item';
-    item.dataset.id = conversation.id;
-
-    const textSpan = document.createElement('span');
-    textSpan.className = 'history-item-text';
-    textSpan.textContent = conversation.title;
-
-    const actionsDiv = document.createElement('div');
-    actionsDiv.className = 'history-item-actions';
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.setAttribute('aria-label', 'Options');
-    deleteBtn.innerHTML = '<span class="material-icons-outlined">more_vert</span>';
-    deleteBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      conversationIdToDelete = conversation.id;
-      confirmModal.classList.add('active');
-    });
-
-    actionsDiv.appendChild(deleteBtn);
-    item.appendChild(textSpan);
-    item.appendChild(actionsDiv);
-
-    item.addEventListener('click', () => {
-      showNotification('Chargement de: ' + conversation.title);
-      closeMenu();
-    });
-
-    return item;
-  }
-
-  // Mettre à jour l'historique
-  function updateHistoryList() {
-    historyList.innerHTML = '';
-    conversationHistory.forEach(conv => {
-      historyList.appendChild(createHistoryItem(conv));
-    });
-
-    // Ajuster la hauteur du contenu de l'accordéon si ouvert
-    if (accOpen) {
-      accContent.style.maxHeight = accContent.scrollHeight + "px";
-    }
-  }
-
-  // Ajouter une conversation à l'historique (uniquement pour le premier message)
-  function addToHistory(title) {
-    const newConv = {
-      id: Date.now(),
-      title: title,
-      date: new Date()
-    };
-    conversationHistory.unshift(newConv);
-    currentConversationId = newConv.id; // Définir la conversation actuelle
-    updateHistoryList();
-  }
-
-  // Supprimer une conversation
-  function deleteConversation(id) {
-    conversationHistory = conversationHistory.filter(conv => conv.id !== id);
-    updateHistoryList();
-    showNotification('Conversation supprimée');
-  }
-
-  // Gestion de la modal de confirmation
-  cancelDelete.addEventListener('click', () => {
-    confirmModal.classList.remove('active');
-    conversationIdToDelete = null;
-  });
-
-  confirmDelete.addEventListener('click', () => {
-    if (conversationIdToDelete !== null) {
-      deleteConversation(conversationIdToDelete);
-      conversationIdToDelete = null;
-    }
-    confirmModal.classList.remove('active');
-  });
-
-  // Fermer la modal en cliquant à l'extérieur
-  confirmModal.addEventListener('click', (e) => {
-    if (e.target === confirmModal) {
-      confirmModal.classList.remove('active');
-      conversationIdToDelete = null;
-    }
-  });
-
-  // Envoyer un message
-  actionBtn.addEventListener('click', () => {
-    const text = input.value.trim();
-    if (!text && !selectedFile) return;
-
-    const fileInfo = selectedFile ? selectedFile.name : null;
-    addMessage(text || 'Fichier envoyé', 'user', fileInfo);
-
-    // Sauvegarder dans l'historique UNIQUEMENT si c'est le premier message de la conversation
-    if (isFirstMessage && text) {
-      addToHistory(text.substring(0, 30) + (text.length > 30 ? '...' : ''));
-      isFirstMessage = false; // Les prochains messages ne créeront pas de nouvelle conversation
-    }
-
-    input.value = '';
-    selectedFile = null;
-    mediaInput.value = '';
-    mediaPreview.classList.remove('active');
-    previewImage.src = '';
-    previewName.textContent = '';
-    input.dispatchEvent(new Event('input'));
-
-    const typingIndicator = addTypingIndicator();
-
-    setTimeout(() => {
-      removeTypingIndicator(typingIndicator);
-      addMessage("Réponse de Starky : " + (text || 'Fichier reçu'), 'bot');
-    }, 1500);
-  });
-
-  // Support Enter
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      actionBtn.click();
-    }
-  });
-
-  // Fonction pour fermer le menu
-  function closeMenu() {
-    sideMenu.classList.remove('active');
-    sideMenu.setAttribute('aria-hidden', 'true');
-    overlay.classList.remove('active');
-  }
-
-  // Ouvrir le menu
-  menuBtn.addEventListener('click', () => {
-    sideMenu.classList.add('active');
-    sideMenu.setAttribute('aria-hidden', 'false');
-    overlay.classList.add('active');
-    overlay.focus();
-  });
-
-  // Fermer le menu via overlay
-  overlay.addEventListener('click', closeMenu);
-
-  // Fermer avec Échap
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      if (confirmModal.classList.contains('active')) {
-        confirmModal.classList.remove('active');
-        conversationIdToDelete = null;
-      } else if (sideMenu.classList.contains('active')) {
-        closeMenu();
-      }
-    }
-  });
-
-  // Accordéon Historique
-  let accOpen = false;
-  function toggleAcc() {
-    accOpen = !accOpen;
-    if (accOpen) {
-      accContent.style.maxHeight = accContent.scrollHeight + "px";
-      accChevron.style.transform = "rotate(180deg)";
-      accHeader.setAttribute('aria-expanded', 'true');
-      accContent.setAttribute('aria-hidden', 'false');
-    } else {
-      accContent.style.maxHeight = "0";
-      accChevron.style.transform = "rotate(0deg)";
-      accHeader.setAttribute('aria-expanded', 'false');
-      accContent.setAttribute('aria-hidden', 'true');
-    }
-  }
-  accHeader.addEventListener('click', toggleAcc);
-  accHeader.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggleAcc();
-    }
-  });
-
-  // New Chat - Réinitialise la conversation
-  const newChatLink = document.getElementById('newChatLink');
-  newChatLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    chat.innerHTML = '';
-    welcome.style.display = 'block';
-    welcome.style.opacity = '1';
-    welcome.style.transform = 'translateY(0)';
-    isFirstMessage = true; // Réinitialiser pour une nouvelle conversation
-    currentConversationId = null; // Pas de conversation active
-    closeMenu();
-  });
-
-  // Notification
-  function showNotification(message) {
-    const notification = document.getElementById('notification');
-    notification.textContent = message;
-    notification.classList.add('show');
-    setTimeout(() => {
-      notification.classList.remove('show');
-    }, 3000);
-  }
-
-  // Callback Google Login
-  function onSignIn(response) {
-    try {
-      const userData = jwt_decode(response.credential);
-      showNotification("Connecté en tant que : " + (userData.email || 'inconnu'));
-    } catch (err) {
-      console.error('Erreur décodage JWT', err);
-    }
-  }
-
-  window.onSignIn = onSignIn;
-
-  // Ajustement clavier
-  function adjustForKeyboard() {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    const viewportHeight = vv.height;
-    const fullHeight = window.innerHeight;
-    const keyboardHeight = Math.max(0, fullHeight - viewportHeight);
-    const inputWrapper = document.querySelector('.input-wrapper');
-    if (keyboardHeight > 150) {
-      inputWrapper.style.bottom = (keyboardHeight + 10) + 'px';
-      const chatEl = document.getElementById('chat');
-      chatEl.style.bottom = (keyboardHeight + 70) + 'px';
-    } else {
-      inputWrapper.style.bottom = '15px';
-      const chatEl = document.getElementById('chat');
-      chatEl.style.bottom = '140px';
-    }
-  }
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', () => {
-      setVh();
-      adjustForKeyboard();
-    });
-    window.visualViewport.addEventListener('scroll', adjustForKeyboard);
-  } else {
-    window.addEventListener('resize', () => {
-      setVh();
-      adjustForKeyboard();
-    });
-  }
-
-  // Initialiser avec quelques conversations de test
-  function initializeTestData() {
-    const testConversations = [
-      'Comment créer une application web ?',
-      'Explique-moi React',
-      'Qu\'est-ce que le machine learning ?',
-      'Comment optimiser mon code ?',
-      'Tutoriel Python pour débutants'
-    ];
-
-    testConversations.forEach((title, index) => {
-      conversationHistory.push({
-        id: Date.now() + index,
-        title: title,
-        date: new Date()
-      });
-    });
-
-    updateHistoryList();
-  }
-
-  // Initialiser les données de test au chargement
-  initializeTestData();
-</script>
-
-<!-- Décodage JWT -->
-<script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
-</body>
-</html>
-
++    1 <!DOCTYPE html>
++    2 <html lang="fr">
++    3 <head>
++    4 <meta charset="utf-8">
++    5 <meta name="viewport" content="width=device-width,initial-scale=1">
++    6 <title>Interface IA - Starky</title>
++    7 
++    8 <!-- Import Google Fonts et Material Icons -->
++    9 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
++   10 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
++   11 
++   12 <style>
++   13   :root {
++   14     --vh: 1vh;
++   15 
++   16     /* Variables pour thème sombre */
++   17     --bg-primary: #0a0a0a;
++   18     --bg-secondary: #111;
++   19     --bg-tertiary: #1a1a1a;
++   20     --text-primary: #fff;
++   21     --text-secondary: #ccc;
++   22     --text-tertiary: #999;
++   23     --border-color: #222;
++   24     --accent-color: #0ea5e9;
++   25     --hover-bg: rgba(255,255,255,0.05);
++   26     --user-msg-bg: #0ea5e9;
++   27     --bot-msg-bg: #111;
++   28     --overlay-bg: rgba(0,0,0,0.35);
++   29     --input-bg: #111;
++   30   }
++   31 
++   32   /* Thème clair */
++   33   body.light-mode {
++   34     --bg-primary: #f8f9fa;
++   35     --bg-secondary: #ffffff;
++   36     --bg-tertiary: #f1f3f5;
++   37     --text-primary: #1a1a1a;
++   38     --text-secondary: #4a5568;
++   39     --text-tertiary: #718096;
++   40     --border-color: #e2e8f0;
++   41     --accent-color: #0ea5e9;
++   42     --hover-bg: rgba(0,0,0,0.05);
++   43     --user-msg-bg: #0ea5e9;
++   44     --bot-msg-bg: #f1f3f5;
++   45     --overlay-bg: rgba(0,0,0,0.25);
++   46     --input-bg: #ffffff;
++   47   }
++   48 
++   49   * {
++   50     box-sizing: border-box;
++   51     /* BLOQUER LA SÉLECTION DE TEXTE ET D'IMAGES */
++   52     -webkit-user-select: none;
++   53     -moz-user-select: none;
++   54     -ms-user-select: none;
++   55     user-select: none;
++   56     -webkit-touch-callout: none;
++   57   }
++   58 
++   59   /* Permettre la sélection UNIQUEMENT dans les champs de texte */
++   60   input, textarea {
++   61     -webkit-user-select: text;
++   62     -moz-user-select: text;
++   63     -ms-user-select: text;
++   64     user-select: text;
++   65   }
++   66 
++   67   /* Empêcher le drag des images */
++   68   img {
++   69     pointer-events: none;
++   70     -webkit-user-drag: none;
++   71     -khtml-user-drag: none;
++   72     -moz-user-drag: none;
++   73     -o-user-drag: none;
++   74     user-drag: none;
++   75   }
++   76 
++   77   html, body {
++   78     margin: 0;
++   79     padding: 0;
++   80     width: 100%;
++   81     height: 100%;
++   82     overflow: hidden;
++   83     position: fixed;
++   84   }
++   85 
++   86   body {
++   87     background: var(--bg-primary);
++   88     color: var(--text-primary);
++   89     font-family: 'Space Grotesk', system-ui, sans-serif;
++   90     transition: background 0.3s ease, color 0.3s ease;
++   91   }
++   92 
++   93   /* HEADER */
++   94   .header {
++   95     display: flex;
++   96     align-items: center;
++   97     justify-content: space-between;
++   98     padding: 10px 14px;
++   99     position: fixed;
++  100     top: 0;
++  101     left: 0;
++  102     right: 0;
++  103     height: 60px;
++  104     background: var(--bg-secondary);
++  105     backdrop-filter: blur(10px);
++  106     border-bottom: 1px solid var(--border-color);
++  107     z-index: 100;
++  108     transition: background 0.3s ease, border-color 0.3s ease;
++  109   }
++  110 
++  111   .btn {
++  112     width: 42px;
++  113     height: 42px;
++  114     border-radius: 10px;
++  115     background: var(--bg-tertiary);
++  116     border: 1px solid var(--border-color);
++  117     display: flex;
++  118     align-items: center;
++  119     justify-content: center;
++  120     cursor: pointer;
++  121     transition: all 0.2s ease;
++  122   }
++  123 
++  124   .btn:hover {
++  125     background: var(--hover-bg);
++  126     transform: scale(1.05);
++  127   }
++  128 
++  129   .btn .material-icons-outlined {
++  130     font-size: 22px;
++  131     color: var(--text-primary);
++  132     transition: color 0.3s ease;
++  133   }
++  134 
++  135   .ia-name {
++  136     background: var(--bg-tertiary);
++  137     border: 1px solid var(--border-color);
++  138     border-radius: 25px;
++  139     padding: 8px 18px;
++  140     font-weight: 700;
++  141     font-size: 15px;
++  142     color: var(--accent-color);
++  143     text-align: center;
++  144     transition: all 0.3s ease;
++  145   }
++  146 
++  147   /* OVERLAY */
++  148   .overlay {
++  149     position: fixed;
++  150     inset: 0;
++  151     background: var(--overlay-bg);
++  152     opacity: 0;
++  153     pointer-events: none;
++  154     transition: opacity 0.25s ease;
++  155     z-index: 190;
++  156   }
++  157   .overlay.active {
++  158     opacity: 1;
++  159     pointer-events: auto;
++  160   }
++  161 
++  162   /* MENU MODERNE */
++  163   .menu {
++  164     position: fixed;
++  165     top: 0;
++  166     left: -260px;
++  167     width: 260px;
++  168     height: 100%;
++  169     background: var(--bg-secondary);
++  170     backdrop-filter: blur(10px);
++  171     transition: left 0.28s ease, background 0.3s ease;
++  172     border-right: 1px solid var(--border-color);
++  173     z-index: 200;
++  174     display: flex;
++  175     flex-direction: column;
++  176     overflow-y: auto;
++  177     overflow-x: hidden;
++  178   }
++  179 
++  180   .menu.active { left: 0; }
++  181 
++  182   .menu-header {
++  183     display: flex;
++  184     align-items: center;
++  185     justify-content: center;
++  186     padding: 18px 12px;
++  187     font-weight: 700;
++  188     font-size: 17px;
++  189     color: var(--accent-color);
++  190     gap: 8px;
++  191     flex-shrink: 0;
++  192   }
++  193 
++  194   .menu a, .menu-item {
++  195     display: flex;
++  196     align-items: center;
++  197     gap: 12px;
++  198     color: var(--text-secondary);
++  199     text-decoration: none;
++  200     padding: 10px 14px;
++  201     font-size: 15px;
++  202     transition: background 0.2s, color 0.2s;
++  203     border-radius: 8px;
++  204     margin: 6px 8px;
++  205     cursor: pointer;
++  206   }
++  207 
++  208   .menu a:hover, .menu-item:hover {
++  209     background: var(--accent-color);
++  210     color: #fff;
++  211   }
++  212 
++  213   .menu a .material-icons-outlined, .menu-item .material-icons-outlined {
++  214     font-size: 20px;
++  215   }
++  216 
++  217   .menu-footer {
++  218     margin-top: auto;
++  219     padding: 12px;
++  220     border-top: 1px solid var(--border-color);
++  221     text-align: center;
++  222     flex-shrink: 0;
++  223   }
++  224 
++  225   /* Bouton de connexion dans le menu */
++  226   .connect-btn {
++  227     width: 100%;
++  228     padding: 12px 16px;
++  229     background: var(--accent-color);
++  230     border: none;
++  231     border-radius: 10px;
++  232     color: #fff;
++  233     font-weight: 600;
++  234     font-size: 14px;
++  235     cursor: pointer;
++  236     transition: all 0.2s;
++  237     font-family: 'Space Grotesk', sans-serif;
++  238     display: flex;
++  239     align-items: center;
++  240     justify-content: center;
++  241     gap: 8px;
++  242   }
++  243 
++  244   .connect-btn:hover {
++  245     background: #0284c7;
++  246     transform: translateY(-2px);
++  247     box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
++  248   }
++  249 
++  250   .connect-btn:active {
++  251     transform: translateY(0);
++  252   }
++  253 
++  254   /* Options de menu pour utilisateur connecté */
++  255   .user-menu-item {
++  256     display: none;
++  257     align-items: center;
++  258     gap: 12px;
++  259     color: var(--accent-color);
++  260     text-decoration: none;
++  261     padding: 10px 14px;
++  262     font-size: 15px;
++  263     transition: background 0.2s, color 0.2s;
++  264     border-radius: 8px;
++  265     margin: 6px 8px;
++  266     font-weight: 600;
++  267     cursor: default;
++  268   }
++  269 
++  270   .user-menu-item.active {
++  271     display: flex;
++  272   }
++  273 
++  274   .user-menu-item .material-icons-outlined {
++  275     font-size: 20px;
++  276   }
++  277 
++  278   .logout-menu-item {
++  279     display: none;
++  280     align-items: center;
++  281     gap: 12px;
++  282     color: var(--text-secondary);
++  283     text-decoration: none;
++  284     padding: 10px 14px;
++  285     font-size: 15px;
++  286     transition: background 0.2s, color 0.2s;
++  287     border-radius: 8px;
++  288     margin: 6px 8px;
++  289     cursor: pointer;
++  290   }
++  291 
++  292   .logout-menu-item.active {
++  293     display: flex;
++  294   }
++  295 
++  296   .logout-menu-item:hover {
++  297     background: #ff4444;
++  298     color: #fff;
++  299   }
++  300 
++  301   .logout-menu-item .material-icons-outlined {
++  302     font-size: 20px;
++  303   }
++  304 
++  305   /* MODAL D'AUTHENTIFICATION */
++  306   .auth-modal {
++  307     position: fixed;
++  308     inset: 0;
++  309     background: rgba(0,0,0,0.7);
++  310     display: none;
++  311     align-items: center;
++  312     justify-content: center;
++  313     z-index: 500;
++  314     backdrop-filter: blur(8px);
++  315     opacity: 0;
++  316     transition: opacity 0.3s ease;
++  317   }
++  318 
++  319   .auth-modal.active {
++  320     display: flex;
++  321     opacity: 1;
++  322   }
++  323 
++  324   .auth-container {
++  325     background: var(--bg-secondary);
++  326     border-radius: 20px;
++  327     max-width: 450px;
++  328     width: 90%;
++  329     max-height: 90vh;
++  330     overflow-y: auto;
++  331     border: 1px solid var(--border-color);
++  332     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
++  333     transition: background 0.3s ease, border-color 0.3s ease;
++  334     animation: slideUp 0.3s ease;
++  335   }
++  336 
++  337   @keyframes slideUp {
++  338     from {
++  339       opacity: 0;
++  340       transform: translateY(30px);
++  341     }
++  342     to {
++  343       opacity: 1;
++  344       transform: translateY(0);
++  345     }
++  346   }
++  347 
++  348   .auth-header {
++  349     padding: 24px 24px 0;
++  350     display: flex;
++  351     align-items: center;
++  352     justify-content: space-between;
++  353   }
++  354 
++  355   .auth-title {
++  356     font-size: 24px;
++  357     font-weight: 700;
++  358     color: var(--text-primary);
++  359     transition: color 0.3s;
++  360   }
++  361 
++  362   .close-auth {
++  363     width: 36px;
++  364     height: 36px;
++  365     border-radius: 50%;
++  366     background: var(--bg-tertiary);
++  367     border: 1px solid var(--border-color);
++  368     display: flex;
++  369     align-items: center;
++  370     justify-content: center;
++  371     cursor: pointer;
++  372     transition: all 0.2s;
++  373   }
++  374 
++  375   .close-auth:hover {
++  376     background: var(--hover-bg);
++  377     transform: rotate(90deg);
++  378   }
++  379 
++  380   .close-auth .material-icons-outlined {
++  381     font-size: 20px;
++  382     color: var(--text-primary);
++  383     transition: color 0.3s;
++  384   }
++  385 
++  386   /* Onglets */
++  387   .auth-tabs {
++  388     display: flex;
++  389     gap: 8px;
++  390     padding: 20px 24px;
++  391     border-bottom: 1px solid var(--border-color);
++  392     transition: border-color 0.3s;
++  393   }
++  394 
++  395   .tab-btn {
++  396     flex: 1;
++  397     padding: 10px 16px;
++  398     background: transparent;
++  399     border: none;
++  400     border-radius: 8px;
++  401     color: var(--text-secondary);
++  402     font-weight: 600;
++  403     font-size: 14px;
++  404     cursor: pointer;
++  405     transition: all 0.2s;
++  406     font-family: 'Space Grotesk', sans-serif;
++  407     position: relative;
++  408   }
++  409 
++  410   .tab-btn:hover {
++  411     background: var(--hover-bg);
++  412   }
++  413 
++  414   .tab-btn.active {
++  415     background: var(--accent-color);
++  416     color: #fff;
++  417   }
++  418 
++  419   /* Formulaires */
++  420   .auth-body {
++  421     padding: 24px;
++  422   }
++  423 
++  424   .auth-form {
++  425     display: none;
++  426   }
++  427 
++  428   .auth-form.active {
++  429     display: block;
++  430   }
++  431 
++  432   .form-group {
++  433     margin-bottom: 16px;
++  434   }
++  435 
++  436   .form-label {
++  437     display: block;
++  438     color: var(--text-secondary);
++  439     font-size: 13px;
++  440     font-weight: 600;
++  441     margin-bottom: 8px;
++  442     transition: color 0.3s;
++  443   }
++  444 
++  445   .form-input {
++  446     width: 100%;
++  447     padding: 12px 16px;
++  448     background: var(--bg-tertiary);
++  449     border: 1px solid var(--border-color);
++  450     border-radius: 10px;
++  451     color: var(--text-primary);
++  452     font-size: 15px;
++  453     font-family: 'Space Grotesk', sans-serif;
++  454     transition: all 0.2s;
++  455   }
++  456 
++  457   .form-input::placeholder {
++  458     color: var(--text-tertiary);
++  459     transition: color 0.3s;
++  460   }
++  461 
++  462   .form-input:focus {
++  463     outline: none;
++  464     border-color: var(--accent-color);
++  465     background: var(--bg-secondary);
++  466     box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
++  467   }
++  468 
++  469   .submit-btn {
++  470     width: 100%;
++  471     padding: 14px 16px;
++  472     background: var(--accent-color);
++  473     border: none;
++  474     border-radius: 10px;
++  475     color: #fff;
++  476     font-weight: 700;
++  477     font-size: 15px;
++  478     cursor: pointer;
++  479     transition: all 0.2s;
++  480     font-family: 'Space Grotesk', sans-serif;
++  481     margin-top: 8px;
++  482   }
++  483 
++  484   .submit-btn:hover {
++  485     background: #0284c7;
++  486     transform: translateY(-2px);
++  487     box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);
++  488   }
++  489 
++  490   .submit-btn:active {
++  491     transform: translateY(0);
++  492   }
++  493 
++  494   .form-footer {
++  495     text-align: center;
++  496     margin-top: 20px;
++  497     color: var(--text-tertiary);
++  498     font-size: 13px;
++  499     transition: color 0.3s;
++  500   }
++  501 
++  502   /* HISTORIQUE (accordéon) */
++  503   .accordion {
++  504     margin: 6px 8px;
++  505     border-radius: 8px;
++  506     overflow: hidden;
++  507     flex-shrink: 0;
++  508   }
++  509 
++  510   .acc-header {
++  511     display: flex;
++  512     align-items: center;
++  513     justify-content: space-between;
++  514     gap: 8px;
++  515     padding: 10px 14px;
++  516     background: transparent;
++  517     color: var(--text-secondary);
++  518     cursor: pointer;
++  519     user-select: none;
++  520     transition: background 0.15s, color 0.3s;
++  521   }
++  522 
++  523   .acc-header:hover {
++  524     background: var(--hover-bg);
++  525   }
++  526 
++  527   .acc-title {
++  528     display: flex;
++  529     align-items: center;
++  530     gap: 12px;
++  531     font-size: 15px;
++  532   }
++  533 
++  534   .acc-chevron {
++  535     transition: transform 0.2s ease, color 0.3s ease;
++  536     color: var(--text-secondary);
++  537   }
++  538 
++  539   .acc-content {
++  540     max-height: 0;
++  541     overflow: hidden;
++  542     transition: max-height 0.28s ease;
++  543     background: var(--hover-bg);
++  544   }
++  545 
++  546   /* Conteneur avec scroll pour l'historique */
++  547   .history-list {
++  548     max-height: 200px;
++  549     overflow-y: auto;
++  550     padding: 4px 0;
++  551     padding-left: 46px;
++  552   }
++  553 
++  554   /* Scrollbar personnalisée */
++  555   .history-list::-webkit-scrollbar {
++  556     width: 6px;
++  557   }
++  558 
++  559   .history-list::-webkit-scrollbar-track {
++  560     background: transparent;
++  561   }
++  562 
++  563   .history-list::-webkit-scrollbar-thumb {
++  564     background: var(--border-color);
++  565     border-radius: 3px;
++  566   }
++  567 
++  568   .history-list::-webkit-scrollbar-thumb:hover {
++  569     background: var(--text-tertiary);
++  570   }
++  571 
++  572   /* Item d'historique avec bouton trois points */
++  573   .history-item {
++  574     display: flex;
++  575     align-items: center;
++  576     gap: 8px;
++  577     padding: 8px 14px 8px 0;
++  578     color: var(--text-secondary);
++  579     text-decoration: none;
++  580     font-size: 14px;
++  581     border-radius: 6px;
++  582     margin: 6px 8px 6px 0;
++  583     transition: background 0.2s, color 0.2s;
++  584     position: relative;
++  585     cursor: pointer;
++  586   }
++  587 
++  588   .history-item:hover {
++  589     background: var(--hover-bg);
++  590     color: var(--text-primary);
++  591   }
++  592 
++  593   .history-item-text {
++  594     flex: 1;
++  595     overflow: hidden;
++  596     text-overflow: ellipsis;
++  597     white-space: nowrap;
++  598   }
++  599 
++  600   .history-item-actions {
++  601     opacity: 1;
++  602     display: flex;
++  603     align-items: center;
++  604   }
++  605 
++  606   .delete-btn {
++  607     background: transparent;
++  608     border: none;
++  609     padding: 4px;
++  610     cursor: pointer;
++  611     display: flex;
++  612     align-items: center;
++  613     justify-content: center;
++  614     color: var(--text-tertiary);
++  615     transition: color 0.2s, transform 0.2s;
++  616     border-radius: 4px;
++  617   }
++  618 
++  619   .delete-btn:hover {
++  620     color: var(--accent-color);
++  621     background: var(--hover-bg);
++  622     transform: scale(1.1);
++  623   }
++  624 
++  625   .delete-btn .material-icons-outlined {
++  626     font-size: 18px;
++  627   }
++  628 
++  629   /* WELCOME */
++  630   .welcome {
++  631     position: absolute;
++  632     top: 85px;
++  633     left: 0;
++  634     right: 0;
++  635     text-align: center;
++  636     font-size: 18px;
++  637     color: var(--text-secondary);
++  638     font-weight: 700;
++  639     transition: opacity 0.4s ease, transform 0.4s ease, color 0.3s ease;
++  640   }
++  641 
++  642   /* CHAT */
++  643   .chat {
++  644     position: absolute;
++  645     top: 95px;
++  646     bottom: 140px;
++  647     left: 0;
++  648     right: 0;
++  649     overflow-y: auto;
++  650     overflow-x: hidden;
++  651     padding: 0 15px 15px;
++  652     display: flex;
++  653     flex-direction: column;
++  654     gap: 10px;
++  655   }
++  656 
++  657   /* Scrollbar personnalisée pour le chat */
++  658   .chat::-webkit-scrollbar {
++  659     width: 8px;
++  660   }
++  661 
++  662   .chat::-webkit-scrollbar-track {
++  663     background: transparent;
++  664   }
++  665 
++  666   .chat::-webkit-scrollbar-thumb {
++  667     background: var(--border-color);
++  668     border-radius: 4px;
++  669   }
++  670 
++  671   .chat::-webkit-scrollbar-thumb:hover {
++  672     background: var(--text-tertiary);
++  673   }
++  674 
++  675   .msg {
++  676     max-width: 80%;
++  677     padding: 10px 14px;
++  678     border-radius: 18px;
++  679     word-wrap: break-word;
++  680     font-size: 14px;
++  681     transition: background 0.3s ease, color 0.3s ease;
++  682   }
++  683 
++  684   .user {
++  685     align-self: flex-end;
++  686     background: var(--user-msg-bg);
++  687     color: #fff;
++  688     border-bottom-right-radius: 4px;
++  689   }
++  690 
++  691   .bot {
++  692     align-self: flex-start;
++  693     background: var(--bot-msg-bg);
++  694     color: var(--text-primary);
++  695     border-bottom-left-radius: 4px;
++  696   }
++  697 
++  698   /* ANIMATION DES TROIS POINTS */
++  699   .typing-indicator {
++  700     align-self: flex-start;
++  701     background: var(--bot-msg-bg);
++  702     color: var(--text-primary);
++  703     border-radius: 18px;
++  704     border-bottom-left-radius: 4px;
++  705     padding: 10px 14px;
++  706     display: flex;
++  707     align-items: center;
++  708     gap: 4px;
++  709     transition: background 0.3s ease;
++  710   }
++  711 
++  712   .typing-indicator span {
++  713     width: 8px;
++  714     height: 8px;
++  715     background: var(--accent-color);
++  716     border-radius: 50%;
++  717     display: inline-block;
++  718     animation: typing 1.4s infinite;
++  719   }
++  720 
++  721   .typing-indicator span:nth-child(2) {
++  722     animation-delay: 0.2s;
++  723   }
++  724 
++  725   .typing-indicator span:nth-child(3) {
++  726     animation-delay: 0.4s;
++  727   }
++  728 
++  729   @keyframes typing {
++  730     0%, 60%, 100% {
++  731       transform: translateY(0);
++  732       opacity: 0.5;
++  733     }
++  734     30% {
++  735       transform: translateY(-10px);
++  736       opacity: 1;
++  737     }
++  738   }
++  739 
++  740   /* INPUT WRAPPER */
++  741   .input-wrapper {
++  742     position: fixed;
++  743     bottom: 15px;
++  744     left: 0;
++  745     right: 0;
++  746     display: flex;
++  747     justify-content: center;
++  748     padding: 0 12px;
++  749     z-index: 150;
++  750   }
++  751 
++  752   /* INPUT BOX */
++  753   .input-box {
++  754     width: 100%;
++  755     max-width: 560px;
++  756     background: var(--input-bg);
++  757     border: 1px solid var(--border-color);
++  758     border-radius: 20px;
++  759     padding: 12px 16px;
++  760     display: flex;
++  761     flex-direction: column;
++  762     gap: 8px;
++  763     transition: background 0.3s ease, border-color 0.3s ease;
++  764     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
++  765   }
++  766 
++  767   body.light-mode .input-box {
++  768     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
++  769   }
++  770 
++  771   /* Aperçu média */
++  772   .media-preview-container {
++  773     display: none;
++  774     align-items: center;
++  775     gap: 8px;
++  776     padding: 8px;
++  777     background: var(--hover-bg);
++  778     border-radius: 10px;
++  779     transition: background 0.3s ease;
++  780   }
++  781 
++  782   .media-preview-container.active {
++  783     display: flex;
++  784   }
++  785 
++  786   .media-preview {
++  787     width: 40px;
++  788     height: 40px;
++  789     object-fit: cover;
++  790     border-radius: 6px;
++  791     border: 1px solid var(--border-color);
++  792   }
++  793 
++  794   .media-preview-name {
++  795     font-size: 12px;
++  796     color: var(--text-tertiary);
++  797     flex: 1;
++  798     overflow: hidden;
++  799     text-overflow: ellipsis;
++  800     white-space: nowrap;
++  801     transition: color 0.3s ease;
++  802   }
++  803 
++  804   .media-remove {
++  805     background: transparent;
++  806     border: none;
++  807     color: #ff4444;
++  808     cursor: pointer;
++  809     padding: 0;
++  810     display: flex;
++  811     align-items: center;
++  812     justify-content: center;
++  813     transition: transform 0.2s;
++  814   }
++  815 
++  816   .media-remove:hover {
++  817     transform: scale(1.1);
++  818   }
++  819 
++  820   .media-remove .material-icons-outlined {
++  821     font-size: 20px;
++  822   }
++  823 
++  824   /* Zone de texte */
++  825   .input-row {
++  826     display: flex;
++  827     align-items: center;
++  828     gap: 8px;
++  829   }
++  830 
++  831   .input-row input {
++  832     flex: 1;
++  833     background: transparent;
++  834     border: none;
++  835     color: var(--text-primary);
++  836     font-size: 16px;
++  837     outline: none;
++  838     transition: color 0.3s ease;
++  839   }
++  840 
++  841   .input-row input::placeholder {
++  842     color: var(--text-tertiary);
++  843     transition: color 0.3s ease;
++  844   }
++  845 
++  846   /* Bouton envoyer */
++  847   .send-btn {
++  848     background: #333;
++  849     border: none;
++  850     width: 38px;
++  851     height: 38px;
++  852     border-radius: 50%;
++  853     color: #fff;
++  854     display: flex;
++  855     align-items: center;
++  856     justify-content: center;
++  857     cursor: pointer;
++  858     transition: background 0.3s, transform 0.2s;
++  859     flex-shrink: 0;
++  860   }
++  861 
++  862   .send-btn:active {
++  863     transform: scale(0.95);
++  864   }
++  865 
++  866   .icon {
++  867     width: 20px;
++  868     height: 20px;
++  869     fill: none;
++  870     stroke: #fff;
++  871     stroke-width: 2;
++  872     stroke-linecap: round;
++  873     stroke-linejoin: round;
++  874   }
++  875 
++  876   /* Boutons média et vocal */
++  877   .button-row {
++  878     display: flex;
++  879     align-items: center;
++  880     gap: 8px;
++  881     padding-top: 4px;
++  882     border-top: 1px solid var(--border-color);
++  883     transition: border-color 0.3s ease;
++  884   }
++  885 
++  886   .media-btn {
++  887     background: transparent;
++  888     border: none;
++  889     color: var(--text-tertiary);
++  890     display: flex;
++  891     align-items: center;
++  892     gap: 6px;
++  893     cursor: pointer;
++  894     font-size: 13px;
++  895     padding: 6px 10px;
++  896     border-radius: 8px;
++  897     transition: background 0.2s, color 0.2s;
++  898   }
++  899 
++  900   .media-btn:hover:not(:disabled) {
++  901     background: var(--hover-bg);
++  902     color: var(--text-primary);
++  903   }
++  904 
++  905   .media-btn:disabled {
++  906     opacity: 0.4;
++  907     cursor: not-allowed;
++  908   }
++  909 
++  910   .media-btn .material-icons-outlined {
++  911     font-size: 18px;
++  912   }
++  913 
++  914   #mediaInput {
++  915     display: none;
++  916   }
++  917 
++  918   /* Notification */
++  919   .notification {
++  920     position: fixed;
++  921     top: 80px;
++  922     left: 50%;
++  923     transform: translateX(-50%);
++  924     background: var(--bg-secondary);
++  925     border: 1px solid var(--accent-color);
++  926     color: var(--text-primary);
++  927     padding: 12px 24px;
++  928     border-radius: 12px;
++  929     z-index: 300;
++  930     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
++  931     opacity: 0;
++  932     pointer-events: none;
++  933     transition: opacity 0.3s ease, background 0.3s ease, color 0.3s ease;
++  934   }
++  935 
++  936   .notification.show {
++  937     opacity: 1;
++  938     pointer-events: auto;
++  939   }
++  940 
++  941   /* Modal de confirmation */
++  942   .confirm-modal {
++  943     position: fixed;
++  944     inset: 0;
++  945     background: rgba(0,0,0,0.5);
++  946     display: none;
++  947     align-items: center;
++  948     justify-content: center;
++  949     z-index: 400;
++  950   }
++  951 
++  952   .confirm-modal.active {
++  953     display: flex;
++  954   }
++  955 
++  956   .confirm-content {
++  957     background: var(--bg-secondary);
++  958     padding: 24px;
++  959     border-radius: 16px;
++  960     max-width: 400px;
++  961     width: 90%;
++  962     border: 1px solid var(--border-color);
++  963     box-shadow: 0 8px 24px rgba(0,0,0,0.3);
++  964     transition: background 0.3s ease, border-color 0.3s ease;
++  965   }
++  966 
++  967   .confirm-title {
++  968     font-size: 18px;
++  969     font-weight: 700;
++  970     color: var(--text-primary);
++  971     margin-bottom: 12px;
++  972     transition: color 0.3s ease;
++  973   }
++  974 
++  975   .confirm-message {
++  976     color: var(--text-secondary);
++  977     margin-bottom: 24px;
++  978     transition: color 0.3s ease;
++  979   }
++  980 
++  981   .confirm-buttons {
++  982     display: flex;
++  983     gap: 12px;
++  984     justify-content: flex-end;
++  985   }
++  986 
++  987   .confirm-btn {
++  988     padding: 10px 20px;
++  989     border-radius: 8px;
++  990     border: none;
++  991     cursor: pointer;
++  992     font-weight: 600;
++  993     font-size: 14px;
++  994     transition: all 0.2s;
++  995   }
++  996 
++  997   .confirm-btn.cancel {
++  998     background: var(--bg-tertiary);
++  999     color: var(--text-primary);
++ 1000     border: 1px solid var(--border-color);
++ 1001   }
++ 1002 
++ 1003   .confirm-btn.cancel:hover {
++ 1004     background: var(--hover-bg);
++ 1005   }
++ 1006 
++ 1007   .confirm-btn.delete {
++ 1008     background: #ff4444;
++ 1009     color: #fff;
++ 1010   }
++ 1011 
++ 1012   .confirm-btn.delete:hover {
++ 1013     background: #cc0000;
++ 1014   }
++ 1015 
++ 1016   /* Responsive */
++ 1017   @media (max-width: 420px) {
++ 1018     .menu { width: 240px; left: -240px; }
++ 1019     .input-box { max-width: 420px; }
++ 1020   }
++ 1021 </style>
++ 1022 </head>
++ 1023 <body>
++ 1024 
++ 1025   <!-- HEADER -->
++ 1026   <div class="header">
++ 1027     <button class="btn" id="menuBtn" aria-label="Ouvrir le menu"><span class="material-icons-outlined">menu</span></button>
++ 1028     <div class="ia-name">Starky</div>
++ 1029     <button class="btn" id="themeBtn" aria-label="Thème"><span class="material-icons-outlined">light_mode</span></button>
++ 1030   </div>
++ 1031 
++ 1032   <!-- OVERLAY -->
++ 1033   <div id="overlay" class="overlay" tabindex="-1"></div>
++ 1034 
++ 1035   <!-- MENU MODERNE -->
++ 1036   <nav class="menu" id="sideMenu" aria-hidden="true" aria-label="Menu principal">
++ 1037     <div class="menu-header">
++ 1038       <span class="material-icons-outlined">chat</span>
++ 1039       <span style="font-weight:700;">Starky</span>
++ 1040     </div>
++ 1041 
++ 1042     <a href="#" id="newChatLink"><span class="material-icons-outlined">chat</span>New Chat</a>
++ 1043 
++ 1044     <div class="accordion" id="historyAcc">
++ 1045       <div class="acc-header" id="accHeader" role="button" aria-expanded="false" tabindex="0">
++ 1046         <div class="acc-title"><span class="material-icons-outlined">history</span><span>Historique</span></div>
++ 1047         <span class="material-icons-outlined acc-chevron" id="accChevron">expand_more</span>
++ 1048       </div>
++ 1049       <div class="acc-content" id="accContent" aria-hidden="true">
++ 1050         <div class="history-list" id="historyList">
++ 1051           <!-- Les conversations seront ajoutées ici dynamiquement -->
++ 1052         </div>
++ 1053       </div>
++ 1054     </div>
++ 1055 
++ 1056     <a href="#"><span class="material-icons-outlined">dashboard</span>Tableau de bord</a>
++ 1057     <a href="#"><span class="material-icons-outlined">description</span>Documentation</a>
++ 1058     <a href="#"><span class="material-icons-outlined">settings</span>Paramètres</a>
++ 1059 
++ 1060     <!-- Option de menu utilisateur connecté -->
++ 1061     <div class="user-menu-item" id="userMenuItem">
++ 1062       <span class="material-icons-outlined">person</span>
++ 1063       <span id="userMenuName"></span>
++ 1064     </div>
++ 1065 
++ 1066     <!-- Option de déconnexion -->
++ 1067     <div class="logout-menu-item" id="logoutMenuItem">
++ 1068       <span class="material-icons-outlined">logout</span>
++ 1069       <span>Se déconnecter</span>
++ 1070     </div>
++ 1071 
++ 1072     <div class="menu-footer">
++ 1073       <!-- Bouton de connexion (affiché si non connecté) -->
++ 1074       <button class="connect-btn" id="openAuthBtn">
++ 1075         <span class="material-icons-outlined">login</span>
++ 1076         <span>Se connecter</span>
++ 1077       </button>
++ 1078     </div>
++ 1079   </nav>
++ 1080 
++ 1081   <!-- MODAL D'AUTHENTIFICATION -->
++ 1082   <div class="auth-modal" id="authModal">
++ 1083     <div class="auth-container">
++ 1084       <div class="auth-header">
++ 1085         <div class="auth-title">Bienvenue</div>
++ 1086         <button class="close-auth" id="closeAuthBtn">
++ 1087           <span class="material-icons-outlined">close</span>
++ 1088         </button>
++ 1089       </div>
++ 1090 
++ 1091       <!-- Onglets -->
++ 1092       <div class="auth-tabs">
++ 1093         <button class="tab-btn active" data-tab="login">Connexion</button>
++ 1094         <button class="tab-btn" data-tab="register">Inscription</button>
++ 1095       </div>
++ 1096 
++ 1097       <!-- Corps -->
++ 1098       <div class="auth-body">
++ 1099         <!-- Formulaire de connexion -->
++ 1100         <form class="auth-form active" id="loginForm">
++ 1101           <div class="form-group">
++ 1102             <label class="form-label" for="loginEmail">Email</label>
++ 1103             <input type="email" class="form-input" id="loginEmail" placeholder="votreemail@example.com" required>
++ 1104           </div>
++ 1105           <div class="form-group">
++ 1106             <label class="form-label" for="loginPassword">Mot de passe</label>
++ 1107             <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
++ 1108           </div>
++ 1109           <button type="submit" class="submit-btn">Se connecter</button>
++ 1110           <div class="form-footer">
++ 1111             Vous n'avez pas de compte ? <a href="#" class="switch-tab" data-tab="register" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">Inscrivez-vous</a>
++ 1112           </div>
++ 1113         </form>
++ 1114 
++ 1115         <!-- Formulaire d'inscription -->
++ 1116         <form class="auth-form" id="registerForm">
++ 1117           <div class="form-group">
++ 1118             <label class="form-label" for="registerFirstName">Prénom</label>
++ 1119             <input type="text" class="form-input" id="registerFirstName" placeholder="Votre prénom" required>
++ 1120           </div>
++ 1121           <div class="form-group">
++ 1122             <label class="form-label" for="registerLastName">Nom</label>
++ 1123             <input type="text" class="form-input" id="registerLastName" placeholder="Votre nom" required>
++ 1124           </div>
++ 1125           <div class="form-group">
++ 1126             <label class="form-label" for="registerEmail">Email</label>
++ 1127             <input type="email" class="form-input" id="registerEmail" placeholder="votreemail@example.com" required>
++ 1128           </div>
++ 1129           <div class="form-group">
++ 1130             <label class="form-label" for="registerPassword">Mot de passe</label>
++ 1131             <input type="password" class="form-input" id="registerPassword" placeholder="••••••••" required>
++ 1132           </div>
++ 1133           <button type="submit" class="submit-btn">S'inscrire</button>
++ 1134           <div class="form-footer">
++ 1135             Vous avez déjà un compte ? <a href="#" class="switch-tab" data-tab="login" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">Connectez-vous</a>
++ 1136           </div>
++ 1137         </form>
++ 1138       </div>
++ 1139     </div>
++ 1140   </div>
++ 1141 
++ 1142   <div id="welcome" class="welcome"><strong>Bienvenue sur Starky</strong> 😊</div>
++ 1143 
++ 1144   <div id="chat" class="chat" role="log" aria-live="polite"></div>
++ 1145 
++ 1146   <!-- Notification -->
++ 1147   <div id="notification" class="notification"></div>
++ 1148 
++ 1149   <!-- Modal de confirmation -->
++ 1150   <div id="confirmModal" class="confirm-modal">
++ 1151     <div class="confirm-content">
++ 1152       <div class="confirm-title">Confirmer la suppression</div>
++ 1153       <div class="confirm-message">Êtes-vous sûr de vouloir supprimer cette conversation ?</div>
++ 1154       <div class="confirm-buttons">
++ 1155         <button class="confirm-btn cancel" id="cancelDelete">Annuler</button>
++ 1156         <button class="confirm-btn delete" id="confirmDelete">Supprimer</button>
++ 1157       </div>
++ 1158     </div>
++ 1159   </div>
++ 1160 
++ 1161   <!-- INPUT WRAPPER -->
++ 1162   <div class="input-wrapper">
++ 1163     <div class="input-box">
++ 1164       <!-- Aperçu média -->
++ 1165       <div class="media-preview-container" id="mediaPreview">
++ 1166         <img class="media-preview" id="previewImage" src="" alt="Aperçu">
++ 1167         <span class="media-preview-name" id="previewName"></span>
++ 1168         <button class="media-remove" id="removeMedia" aria-label="Supprimer le média">
++ 1169           <span class="material-icons-outlined">close</span>
++ 1170         </button>
++ 1171       </div>
++ 1172 
++ 1173       <!-- Zone de texte -->
++ 1174       <div class="input-row">
++ 1175         <input id="prompt" type="text" placeholder="Écrire un message..." autocomplete="off" aria-label="Message">
++ 1176         <button id="actionBtn" class="send-btn" aria-label="Envoyer">
++ 1177           <svg class="icon" id="iconSend" viewBox="0 0 24 24">
++ 1178             <path d="M22 2L11 13"/>
++ 1179             <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
++ 1180           </svg>
++ 1181         </button>
++ 1182       </div>
++ 1183 
++ 1184       <!-- Boutons média et vocal -->
++ 1185       <div class="button-row">
++ 1186         <button class="media-btn" id="mediaBtn">
++ 1187           <span class="material-icons-outlined">attach_file</span>
++ 1188           <span>Média</span>
++ 1189         </button>
++ 1190         <button class="media-btn" id="voiceBtn" disabled title="Chat vocal - Prochainement">
++ 1191           <span class="material-icons-outlined">mic</span>
++ 1192           <span>Chat vocal</span>
++ 1193         </button>
++ 1194         <input type="file" id="mediaInput" accept="image/*,video/*,audio/*" multiple>
++ 1195       </div>
++ 1196     </div>
++ 1197   </div>
++ 1198 
++ 1199 <script>
++ 1200   // ===========================
++ 1201   // BLOQUER ACTIONS PAR DÉFAUT
++ 1202   // ===========================
++ 1203   // Empêcher le menu contextuel (clic droit)
++ 1204   document.addEventListener('contextmenu', function(e) {
++ 1205     e.preventDefault();
++ 1206   }, false);
++ 1207 
++ 1208   // Empêcher la sélection de texte par double-clic ou drag
++ 1209   document.addEventListener('selectstart', function(e) {
++ 1210     // Autoriser la sélection dans les inputs et textareas
++ 1211     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
++ 1212       return true;
++ 1213     }
++ 1214     e.preventDefault();
++ 1215   }, false);
++ 1216 
++ 1217   // Empêcher le drag d'images
++ 1218   document.addEventListener('dragstart', function(e) {
++ 1219     if (e.target.tagName === 'IMG') {
++ 1220       e.preventDefault();
++ 1221     }
++ 1222   }, false);
++ 1223 
++ 1224   // Empêcher certaines combinaisons de touches (Ctrl+A, Ctrl+C, etc.)
++ 1225   document.addEventListener('keydown', function(e) {
++ 1226     // Si on est dans un input ou textarea, on autorise
++ 1227     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
++ 1228       return true;
++ 1229     }
++ 1230 
++ 1231     // Bloquer Ctrl+A (tout sélectionner)
++ 1232     if (e.ctrlKey && e.key === 'a') {
++ 1233       e.preventDefault();
++ 1234     }
++ 1235     // Bloquer Ctrl+C (copier)
++ 1236     if (e.ctrlKey && e.key === 'c') {
++ 1237       e.preventDefault();
++ 1238     }
++ 1239   }, false);
++ 1240 
++ 1241   // Empêcher le scroll élastique et le décalage d'écran
++ 1242   document.addEventListener('touchmove', function(e) {
++ 1243     // Autoriser le scroll dans le chat et le menu
++ 1244     const target = e.target;
++ 1245     const chat = document.getElementById('chat');
++ 1246     const sideMenu = document.getElementById('sideMenu');
++ 1247     const authModal = document.getElementById('authModal');
++ 1248     
++ 1249     if (chat.contains(target) || sideMenu.contains(target) || authModal.contains(target)) {
++ 1250       return true;
++ 1251     }
++ 1252     
++ 1253     e.preventDefault();
++ 1254   }, { passive: false });
++ 1255 
++ 1256   // ===========================
++ 1257   // VARIABLES GLOBALES
++ 1258   // ===========================
++ 1259   // Définir --vh pour gérer la hauteur visible
++ 1260   function setVh() {
++ 1261     const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
++ 1262     document.documentElement.style.setProperty('--vh', (height * 0.01) + 'px');
++ 1263   }
++ 1264   setVh();
++ 1265   if (window.visualViewport) {
++ 1266     window.visualViewport.addEventListener('resize', setVh);
++ 1267     window.visualViewport.addEventListener('scroll', setVh);
++ 1268   } else {
++ 1269     window.addEventListener('resize', setVh);
++ 1270   }
++ 1271 
++ 1272   const input = document.getElementById('prompt');
++ 1273   const chat = document.getElementById('chat');
++ 1274   const iconSend = document.getElementById('iconSend');
++ 1275   const actionBtn = document.getElementById('actionBtn');
++ 1276   const welcome = document.getElementById('welcome');
++ 1277   const menuBtn = document.getElementById('menuBtn');
++ 1278   const sideMenu = document.getElementById('sideMenu');
++ 1279   const overlay = document.getElementById('overlay');
++ 1280   const themeBtn = document.getElementById('themeBtn');
++ 1281 
++ 1282   const accHeader = document.getElementById('accHeader');
++ 1283   const accContent = document.getElementById('accContent');
++ 1284   const accChevron = document.getElementById('accChevron');
++ 1285   const historyList = document.getElementById('historyList');
++ 1286 
++ 1287   const mediaBtn = document.getElementById('mediaBtn');
++ 1288   const voiceBtn = document.getElementById('voiceBtn');
++ 1289   const mediaInput = document.getElementById('mediaInput');
++ 1290   const mediaPreview = document.getElementById('mediaPreview');
++ 1291   const previewImage = document.getElementById('previewImage');
++ 1292   const previewName = document.getElementById('previewName');
++ 1293   const removeMedia = document.getElementById('removeMedia');
++ 1294 
++ 1295   const confirmModal = document.getElementById('confirmModal');
++ 1296   const cancelDelete = document.getElementById('cancelDelete');
++ 1297   const confirmDelete = document.getElementById('confirmDelete');
++ 1298 
++ 1299   // Éléments d'authentification
++ 1300   const authModal = document.getElementById('authModal');
++ 1301   const openAuthBtn = document.getElementById('openAuthBtn');
++ 1302   const closeAuthBtn = document.getElementById('closeAuthBtn');
++ 1303   const loginForm = document.getElementById('loginForm');
++ 1304   const registerForm = document.getElementById('registerForm');
++ 1305   const userMenuItem = document.getElementById('userMenuItem');
++ 1306   const userMenuName = document.getElementById('userMenuName');
++ 1307   const logoutMenuItem = document.getElementById('logoutMenuItem');
++ 1308 
++ 1309   let selectedFile = null;
++ 1310   let conversationHistory = [];
++ 1311   let conversationIdToDelete = null;
++ 1312   let currentConversationId = null;
++ 1313   let isFirstMessage = true;
++ 1314   let currentUser = null;
++ 1315 
++ 1316   // ===========================
++ 1317   // GESTION DE L'AUTHENTIFICATION
++ 1318   // ===========================
++ 1319 
++ 1320   // Ouvrir la modal d'authentification
++ 1321   openAuthBtn.addEventListener('click', function() {
++ 1322     authModal.classList.add('active');
++ 1323     closeMenu();
++ 1324   });
++ 1325 
++ 1326   // Fermer la modal d'authentification
++ 1327   closeAuthBtn.addEventListener('click', function() {
++ 1328     authModal.classList.remove('active');
++ 1329   });
++ 1330 
++ 1331   // Fermer en cliquant à l'extérieur
++ 1332   authModal.addEventListener('click', function(e) {
++ 1333     if (e.target === authModal) {
++ 1334       authModal.classList.remove('active');
++ 1335     }
++ 1336   });
++ 1337 
++ 1338   // Gestion des onglets
++ 1339   const tabBtns = document.querySelectorAll('.tab-btn');
++ 1340   const authForms = document.querySelectorAll('.auth-form');
++ 1341 
++ 1342   tabBtns.forEach(btn => {
++ 1343     btn.addEventListener('click', function() {
++ 1344       const targetTab = this.getAttribute('data-tab');
++ 1345 
++ 1346       // Mettre à jour les boutons d'onglets
++ 1347       tabBtns.forEach(b => b.classList.remove('active'));
++ 1348       this.classList.add('active');
++ 1349 
++ 1350       // Afficher le bon formulaire
++ 1351       authForms.forEach(form => {
++ 1352         if (form.id === targetTab + 'Form') {
++ 1353           form.classList.add('active');
++ 1354         } else {
++ 1355           form.classList.remove('active');
++ 1356         }
++ 1357       });
++ 1358     });
++ 1359   });
++ 1360 
++ 1361   // Gestion des liens de basculement entre formulaires
++ 1362   const switchTabLinks = document.querySelectorAll('.switch-tab');
++ 1363   switchTabLinks.forEach(link => {
++ 1364     link.addEventListener('click', function(e) {
++ 1365       e.preventDefault();
++ 1366       const targetTab = this.getAttribute('data-tab');
++ 1367       const targetBtn = document.querySelector(`.tab-btn[data-tab="${targetTab}"]`);
++ 1368       if (targetBtn) {
++ 1369         targetBtn.click();
++ 1370       }
++ 1371     });
++ 1372   });
++ 1373 
++ 1374   // Soumission du formulaire de connexion
++ 1375   loginForm.addEventListener('submit', function(e) {
++ 1376     e.preventDefault();
++ 1377 
++ 1378     const email = document.getElementById('loginEmail').value.trim();
++ 1379     const password = document.getElementById('loginPassword').value.trim();
++ 1380 
++ 1381     if (!email || !password) {
++ 1382       showNotification('Veuillez remplir tous les champs');
++ 1383       return;
++ 1384     }
++ 1385 
++ 1386     // Validation email
++ 1387     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++ 1388     if (!emailRegex.test(email)) {
++ 1389       showNotification('Adresse email invalide');
++ 1390       return;
++ 1391     }
++ 1392 
++ 1393     // Simulation de connexion (à remplacer par une vraie authentification)
++ 1394     currentUser = {
++ 1395       firstName: 'John',
++ 1396       lastName: 'Doe',
++ 1397       email: email
++ 1398     };
++ 1399 
++ 1400     updateUserDisplay();
++ 1401     authModal.classList.remove('active');
++ 1402     showNotification('Connexion réussie !');
++ 1403 
++ 1404     // Réinitialiser le formulaire
++ 1405     loginForm.reset();
++ 1406   });
++ 1407 
++ 1408   // Soumission du formulaire d'inscription
++ 1409   registerForm.addEventListener('submit', function(e) {
++ 1410     e.preventDefault();
++ 1411 
++ 1412     const firstName = document.getElementById('registerFirstName').value.trim();
++ 1413     const lastName = document.getElementById('registerLastName').value.trim();
++ 1414     const email = document.getElementById('registerEmail').value.trim();
++ 1415     const password = document.getElementById('registerPassword').value.trim();
++ 1416 
++ 1417     if (!firstName || !lastName || !email || !password) {
++ 1418       showNotification('Veuillez remplir tous les champs');
++ 1419       return;
++ 1420     }
++ 1421 
++ 1422     // Validation email
++ 1423     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++ 1424     if (!emailRegex.test(email)) {
++ 1425       showNotification('Adresse email invalide');
++ 1426       return;
++ 1427     }
++ 1428 
++ 1429     // Validation mot de passe
++ 1430     if (password.length < 6) {
++ 1431       showNotification('Le mot de passe doit contenir au moins 6 caractères');
++ 1432       return;
++ 1433     }
++ 1434 
++ 1435     // Simulation d'inscription (à remplacer par une vraie authentification)
++ 1436     currentUser = {
++ 1437       firstName: firstName,
++ 1438       lastName: lastName,
++ 1439       email: email
++ 1440     };
++ 1441 
++ 1442     updateUserDisplay();
++ 1443     authModal.classList.remove('active');
++ 1444     showNotification('Inscription réussie !');
++ 1445 
++ 1446     // Réinitialiser le formulaire
++ 1447     registerForm.reset();
++ 1448   });
++ 1449 
++ 1450   // Mettre à jour l'affichage utilisateur
++ 1451   function updateUserDisplay() {
++ 1452     if (currentUser) {
++ 1453       // Cacher le bouton de connexion
++ 1454       openAuthBtn.style.display = 'none';
++ 1455 
++ 1456       // Afficher les infos utilisateur dans le menu
++ 1457       userMenuItem.classList.add('active');
++ 1458       logoutMenuItem.classList.add('active');
++ 1459       userMenuName.textContent = `${currentUser.firstName} ${currentUser.lastName}`;
++ 1460     } else {
++ 1461       // Afficher le bouton de connexion
++ 1462       openAuthBtn.style.display = 'flex';
++ 1463 
++ 1464       // Cacher les infos utilisateur
++ 1465       userMenuItem.classList.remove('active');
++ 1466       logoutMenuItem.classList.remove('active');
++ 1467     }
++ 1468   }
++ 1469 
++ 1470   // Déconnexion
++ 1471   logoutMenuItem.addEventListener('click', function() {
++ 1472     currentUser = null;
++ 1473     updateUserDisplay();
++ 1474     showNotification('Déconnexion réussie');
++ 1475     closeMenu();
++ 1476   });
++ 1477 
++ 1478   // ===========================
++ 1479   // GESTION DU THÈME
++ 1480   // ===========================
++ 1481   let isDarkMode = true;
++ 1482   themeBtn.addEventListener('click', () => {
++ 1483     isDarkMode = !isDarkMode;
++ 1484     if (isDarkMode) {
++ 1485       document.body.classList.remove('light-mode');
++ 1486       themeBtn.querySelector('.material-icons-outlined').textContent = 'light_mode';
++ 1487     } else {
++ 1488       document.body.classList.add('light-mode');
++ 1489       themeBtn.querySelector('.material-icons-outlined').textContent = 'dark_mode';
++ 1490     }
++ 1491   });
++ 1492 
++ 1493   // ===========================
++ 1494   // GESTION DES MÉDIAS
++ 1495   // ===========================
++ 1496 
++ 1497   // Ouvrir sélecteur de fichiers
++ 1498   mediaBtn.addEventListener('click', () => {
++ 1499     mediaInput.click();
++ 1500   });
++ 1501 
++ 1502   // Gestion du bouton vocal (inactif pour l'instant)
++ 1503   voiceBtn.addEventListener('click', () => {
++ 1504     showNotification('Fonctionnalité de chat vocal - Prochainement disponible');
++ 1505   });
++ 1506 
++ 1507   // Gestion de la sélection de fichier
++ 1508   mediaInput.addEventListener('change', (e) => {
++ 1509     const file = e.target.files[0];
++ 1510     if (file) {
++ 1511       selectedFile = file;
++ 1512 
++ 1513       if (file.type.startsWith('image/')) {
++ 1514         const reader = new FileReader();
++ 1515         reader.onload = (event) => {
++ 1516           previewImage.src = event.target.result;
++ 1517           previewImage.style.display = 'block';
++ 1518         };
++ 1519         reader.readAsDataURL(file);
++ 1520       } else {
++ 1521         previewImage.style.display = 'none';
++ 1522       }
++ 1523 
++ 1524       previewName.textContent = file.name;
++ 1525       mediaPreview.classList.add('active');
++ 1526     }
++ 1527   });
++ 1528 
++ 1529   // Supprimer le média
++ 1530   removeMedia.addEventListener('click', (e) => {
++ 1531     e.stopPropagation();
++ 1532     selectedFile = null;
++ 1533     mediaInput.value = '';
++ 1534     mediaPreview.classList.remove('active');
++ 1535     previewImage.src = '';
++ 1536     previewName.textContent = '';
++ 1537   });
++ 1538 
++ 1539   // Mise à jour du style du bouton send
++ 1540   input.addEventListener('input', () => {
++ 1541     const hasText = input.value.trim().length > 0;
++ 1542     actionBtn.style.background = hasText || selectedFile ? '#0ea5e9' : '#333';
++ 1543   });
++ 1544 
++ 1545   // ===========================
++ 1546   // GESTION DU CHAT
++ 1547   // ===========================
++ 1548 
++ 1549   // Ajouter un message
++ 1550   function addMessage(text, sender, fileInfo = null) {
++ 1551     if (welcome.style.display !== "none") {
++ 1552       welcome.style.opacity = "0";
++ 1553       welcome.style.transform = "translateY(-20px)";
++ 1554       setTimeout(() => welcome.style.display = "none", 400);
++ 1555     }
++ 1556     const msg = document.createElement('div');
++ 1557     msg.className = 'msg ' + sender;
++ 1558 
++ 1559     if (fileInfo) {
++ 1560       msg.textContent = text + ' [Fichier joint: ' + fileInfo + ']';
++ 1561     } else {
++ 1562       msg.textContent = text;
++ 1563     }
++ 1564 
++ 1565     chat.appendChild(msg);
++ 1566     requestAnimationFrame(() => {
++ 1567       chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
++ 1568     });
++ 1569     return msg;
++ 1570   }
++ 1571 
++ 1572   // Ajouter l'indicateur de saisie
++ 1573   function addTypingIndicator() {
++ 1574     const typing = document.createElement('div');
++ 1575     typing.className = 'typing-indicator';
++ 1576     typing.innerHTML = '<span></span><span></span><span></span>';
++ 1577     chat.appendChild(typing);
++ 1578     requestAnimationFrame(() => {
++ 1579       chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
++ 1580     });
++ 1581     return typing;
++ 1582   }
++ 1583 
++ 1584   // Supprimer l'indicateur de saisie
++ 1585   function removeTypingIndicator(typingElement) {
++ 1586     if (typingElement && typingElement.parentNode) {
++ 1587       typingElement.parentNode.removeChild(typingElement);
++ 1588     }
++ 1589   }
++ 1590 
++ 1591   // ===========================
++ 1592   // GESTION DE L'HISTORIQUE
++ 1593   // ===========================
++ 1594 
++ 1595   // Fonction pour créer un item d'historique
++ 1596   function createHistoryItem(conversation) {
++ 1597     const item = document.createElement('div');
++ 1598     item.className = 'history-item';
++ 1599     item.dataset.id = conversation.id;
++ 1600 
++ 1601     const textSpan = document.createElement('span');
++ 1602     textSpan.className = 'history-item-text';
++ 1603     textSpan.textContent = conversation.title;
++ 1604 
++ 1605     const actionsDiv = document.createElement('div');
++ 1606     actionsDiv.className = 'history-item-actions';
++ 1607 
++ 1608     const deleteBtn = document.createElement('button');
++ 1609     deleteBtn.className = 'delete-btn';
++ 1610     deleteBtn.setAttribute('aria-label', 'Options');
++ 1611     deleteBtn.innerHTML = '<span class="material-icons-outlined">more_vert</span>';
++ 1612     deleteBtn.addEventListener('click', (e) => {
++ 1613       e.stopPropagation();
++ 1614       conversationIdToDelete = conversation.id;
++ 1615       confirmModal.classList.add('active');
++ 1616     });
++ 1617 
++ 1618     actionsDiv.appendChild(deleteBtn);
++ 1619     item.appendChild(textSpan);
++ 1620     item.appendChild(actionsDiv);
++ 1621 
++ 1622     item.addEventListener('click', () => {
++ 1623       showNotification('Chargement de: ' + conversation.title);
++ 1624       closeMenu();
++ 1625     });
++ 1626 
++ 1627     return item;
++ 1628   }
++ 1629 
++ 1630   // Mettre à jour l'historique
++ 1631   function updateHistoryList() {
++ 1632     historyList.innerHTML = '';
++ 1633     conversationHistory.forEach(conv => {
++ 1634       historyList.appendChild(createHistoryItem(conv));
++ 1635     });
++ 1636 
++ 1637     // Ajuster la hauteur du contenu de l'accordéon si ouvert
++ 1638     if (accOpen) {
++ 1639       accContent.style.maxHeight = accContent.scrollHeight + "px";
++ 1640     }
++ 1641   }
++ 1642 
++ 1643   // Ajouter une conversation à l'historique (uniquement pour le premier message)
++ 1644   function addToHistory(title) {
++ 1645     const newConv = {
++ 1646       id: Date.now(),
++ 1647       title: title,
++ 1648       date: new Date()
++ 1649     };
++ 1650     conversationHistory.unshift(newConv);
++ 1651     currentConversationId = newConv.id;
++ 1652     updateHistoryList();
++ 1653   }
++ 1654 
++ 1655   // Supprimer une conversation
++ 1656   function deleteConversation(id) {
++ 1657     conversationHistory = conversationHistory.filter(conv => conv.id !== id);
++ 1658     updateHistoryList();
++ 1659     showNotification('Conversation supprimée');
++ 1660   }
++ 1661 
++ 1662   // Gestion de la modal de confirmation
++ 1663   cancelDelete.addEventListener('click', () => {
++ 1664     confirmModal.classList.remove('active');
++ 1665     conversationIdToDelete = null;
++ 1666   });
++ 1667 
++ 1668   confirmDelete.addEventListener('click', () => {
++ 1669     if (conversationIdToDelete !== null) {
++ 1670       deleteConversation(conversationIdToDelete);
++ 1671       conversationIdToDelete = null;
++ 1672     }
++ 1673     confirmModal.classList.remove('active');
++ 1674   });
++ 1675 
++ 1676   // Fermer la modal en cliquant à l'extérieur
++ 1677   confirmModal.addEventListener('click', (e) => {
++ 1678     if (e.target === confirmModal) {
++ 1679       confirmModal.classList.remove('active');
++ 1680       conversationIdToDelete = null;
++ 1681     }
++ 1682   });
++ 1683 
++ 1684   // ===========================
++ 1685   // ENVOYER UN MESSAGE
++ 1686   // ===========================
++ 1687 
++ 1688   actionBtn.addEventListener('click', () => {
++ 1689     const text = input.value.trim();
++ 1690     if (!text && !selectedFile) return;
++ 1691 
++ 1692     const fileInfo = selectedFile ? selectedFile.name : null;
++ 1693     addMessage(text || 'Fichier envoyé', 'user', fileInfo);
++ 1694 
++ 1695     // Sauvegarder dans l'historique UNIQUEMENT si c'est le premier message de la conversation
++ 1696     if (isFirstMessage && text) {
++ 1697       addToHistory(text.substring(0, 30) + (text.length > 30 ? '...' : ''));
++ 1698       isFirstMessage = false;
++ 1699     }
++ 1700 
++ 1701     input.value = '';
++ 1702     selectedFile = null;
++ 1703     mediaInput.value = '';
++ 1704     mediaPreview.classList.remove('active');
++ 1705     previewImage.src = '';
++ 1706     previewName.textContent = '';
++ 1707     input.dispatchEvent(new Event('input'));
++ 1708 
++ 1709     const typingIndicator = addTypingIndicator();
++ 1710 
++ 1711     setTimeout(() => {
++ 1712       removeTypingIndicator(typingIndicator);
++ 1713       addMessage("Réponse de Starky : " + (text || 'Fichier reçu'), 'bot');
++ 1714     }, 1500);
++ 1715   });
++ 1716 
++ 1717   // Support Enter
++ 1718   input.addEventListener('keydown', (e) => {
++ 1719     if (e.key === 'Enter') {
++ 1720       e.preventDefault();
++ 1721       actionBtn.click();
++ 1722     }
++ 1723   });
++ 1724 
++ 1725   // ===========================
++ 1726   // GESTION DU MENU
++ 1727   // ===========================
++ 1728 
++ 1729   // Fonction pour fermer le menu
++ 1730   function closeMenu() {
++ 1731     sideMenu.classList.remove('active');
++ 1732     sideMenu.setAttribute('aria-hidden', 'true');
++ 1733     overlay.classList.remove('active');
++ 1734   }
++ 1735 
++ 1736   // Ouvrir le menu
++ 1737   menuBtn.addEventListener('click', () => {
++ 1738     sideMenu.classList.add('active');
++ 1739     sideMenu.setAttribute('aria-hidden', 'false');
++ 1740     overlay.classList.add('active');
++ 1741     overlay.focus();
++ 1742   });
++ 1743 
++ 1744   // Fermer le menu via overlay
++ 1745   overlay.addEventListener('click', closeMenu);
++ 1746 
++ 1747   // Fermer avec Échap
++ 1748   document.addEventListener('keydown', (e) => {
++ 1749     if (e.key === 'Escape') {
++ 1750       if (authModal.classList.contains('active')) {
++ 1751         authModal.classList.remove('active');
++ 1752       } else if (confirmModal.classList.contains('active')) {
++ 1753         confirmModal.classList.remove('active');
++ 1754         conversationIdToDelete = null;
++ 1755       } else if (sideMenu.classList.contains('active')) {
++ 1756         closeMenu();
++ 1757       }
++ 1758     }
++ 1759   });
++ 1760 
++ 1761   // ===========================
++ 1762   // ACCORDÉON HISTORIQUE
++ 1763   // ===========================
++ 1764 
++ 1765   let accOpen = false;
++ 1766   function toggleAcc() {
++ 1767     accOpen = !accOpen;
++ 1768     if (accOpen) {
++ 1769       accContent.style.maxHeight = accContent.scrollHeight + "px";
++ 1770       accChevron.style.transform = "rotate(180deg)";
++ 1771       accHeader.setAttribute('aria-expanded', 'true');
++ 1772       accContent.setAttribute('aria-hidden', 'false');
++ 1773     } else {
++ 1774       accContent.style.maxHeight = "0";
++ 1775       accChevron.style.transform = "rotate(0deg)";
++ 1776       accHeader.setAttribute('aria-expanded', 'false');
++ 1777       accContent.setAttribute('aria-hidden', 'true');
++ 1778     }
++ 1779   }
++ 1780   accHeader.addEventListener('click', toggleAcc);
++ 1781   accHeader.addEventListener('keydown', (e) => {
++ 1782     if (e.key === 'Enter' || e.key === ' ') {
++ 1783       e.preventDefault();
++ 1784       toggleAcc();
++ 1785     }
++ 1786   });
++ 1787 
++ 1788   // New Chat - Réinitialise la conversation
++ 1789   const newChatLink = document.getElementById('newChatLink');
++ 1790   newChatLink.addEventListener('click', (e) => {
++ 1791     e.preventDefault();
++ 1792     chat.innerHTML = '';
++ 1793     welcome.style.display = 'block';
++ 1794     welcome.style.opacity = '1';
++ 1795     welcome.style.transform = 'translateY(0)';
++ 1796     isFirstMessage = true;
++ 1797     currentConversationId = null;
++ 1798     closeMenu();
++ 1799   });
++ 1800 
++ 1801   // ===========================
++ 1802   // NOTIFICATION
++ 1803   // ===========================
++ 1804 
++ 1805   function showNotification(message) {
++ 1806     const notification = document.getElementById('notification');
++ 1807     notification.textContent = message;
++ 1808     notification.classList.add('show');
++ 1809     setTimeout(() => {
++ 1810       notification.classList.remove('show');
++ 1811     }, 3000);
++ 1812   }
++ 1813 
++ 1814   // ===========================
++ 1815   // AJUSTEMENT CLAVIER
++ 1816   // ===========================
++ 1817 
++ 1818   function adjustForKeyboard() {
++ 1819     const vv = window.visualViewport;
++ 1820     if (!vv) return;
++ 1821     const viewportHeight = vv.height;
++ 1822     const fullHeight = window.innerHeight;
++ 1823     const keyboardHeight = Math.max(0, fullHeight - viewportHeight);
++ 1824     const inputWrapper = document.querySelector('.input-wrapper');
++ 1825     if (keyboardHeight > 150) {
++ 1826       inputWrapper.style.bottom = (keyboardHeight + 10) + 'px';
++ 1827       const chatEl = document.getElementById('chat');
++ 1828       chatEl.style.bottom = (keyboardHeight + 70) + 'px';
++ 1829     } else {
++ 1830       inputWrapper.style.bottom = '15px';
++ 1831       const chatEl = document.getElementById('chat');
++ 1832       chatEl.style.bottom = '140px';
++ 1833     }
++ 1834   }
++ 1835   if (window.visualViewport) {
++ 1836     window.visualViewport.addEventListener('resize', () => {
++ 1837       setVh();
++ 1838       adjustForKeyboard();
++ 1839     });
++ 1840     window.visualViewport.addEventListener('scroll', adjustForKeyboard);
++ 1841   } else {
++ 1842     window.addEventListener('resize', () => {
++ 1843       setVh();
++ 1844       adjustForKeyboard();
++ 1845     });
++ 1846   }
++ 1847 
++ 1848   // ===========================
++ 1849   // INITIALISATION
++ 1850   // ===========================
++ 1851 
++ 1852   // Initialiser avec quelques conversations de test
++ 1853   function initializeTestData() {
++ 1854     const testConversations = [
++ 1855       'Comment créer une application web ?',
++ 1856       'Explique-moi React',
++ 1857       'Qu\'est-ce que le machine learning ?',
++ 1858       'Comment optimiser mon code ?',
++ 1859       'Tutoriel Python pour débutants'
++ 1860     ];
++ 1861 
++ 1862     testConversations.forEach((title, index) => {
++ 1863       conversationHistory.push({
++ 1864         id: Date.now() + index,
++ 1865         title: title,
++ 1866         date: new Date()
++ 1867       });
++ 1868     });
++ 1869 
++ 1870     updateHistoryList();
++ 1871   }
++ 1872 
++ 1873   // Initialiser les données de test au chargement
++ 1874   initializeTestData();
++ 1875 
++ 1876   // Initialiser l'affichage utilisateur
++ 1877   updateUserDisplay();
++ 1878 </script>
++ 1879 
++ 1880 </body>
++ 1881 </html>

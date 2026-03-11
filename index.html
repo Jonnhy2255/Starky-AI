@@ -2,18 +2,15 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Interface IA - Starky</title>
 
-<!-- Import Google Fonts et Material Icons -->
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
 
 <style>
   :root {
     --vh: 1vh;
-
-    /* Variables pour thème sombre */
     --bg-primary: #0a0a0a;
     --bg-secondary: #111;
     --bg-tertiary: #1a1a1a;
@@ -29,7 +26,6 @@
     --input-bg: #111;
   }
 
-  /* Thème clair */
   body.light-mode {
     --bg-primary: #f8f9fa;
     --bg-secondary: #ffffff;
@@ -46,39 +42,7 @@
     --input-bg: #ffffff;
   }
 
-  * {
-    box-sizing: border-box;
-    /* BLOQUER LA SÉLECTION DE TEXTE ET D'IMAGES */
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-touch-callout: none;
-  }
-
-  /* Permettre la sélection UNIQUEMENT dans les champs de texte */
-  input, textarea {
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
-  }
-
-  /* Empêcher le drag des images */
-  img {
-    pointer-events: none;
-    -webkit-user-drag: none;
-    -khtml-user-drag: none;
-    -moz-user-drag: none;
-    -o-user-drag: none;
-    user-drag: none;
-  }
-
-  html {
-    /* Empêcher le zoom et le déplacement */
-    touch-action: pan-x pan-y;
-    -ms-touch-action: pan-x pan-y;
-  }
+  * { box-sizing: border-box; }
 
   body {
     margin: 0;
@@ -88,995 +52,336 @@
     height: calc(var(--vh) * 100);
     overflow: hidden;
     transition: background 0.3s ease, color 0.3s ease;
-    /* Empêcher le zoom et le déplacement */
-    touch-action: pan-x pan-y;
-    -ms-touch-action: pan-x pan-y;
-    position: fixed;
-    width: 100%;
   }
 
-  /* HEADER */
+  /* ── HEADER ── */
   .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 10px 14px;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 0; left: 0; right: 0;
     height: 60px;
     background: var(--bg-secondary);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border-color);
     z-index: 100;
     transition: background 0.3s ease, border-color 0.3s ease;
-    touch-action: none;
   }
 
   .btn {
-    width: 42px;
-    height: 42px;
+    width: 42px; height: 42px;
     border-radius: 10px;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    touch-action: manipulation;
+    flex-shrink: 0;
   }
+  .btn:hover { background: var(--hover-bg); transform: scale(1.05); }
+  .btn .material-icons-outlined { font-size: 22px; color: var(--text-primary); transition: color 0.3s ease; }
 
-  .btn:hover {
-    background: var(--hover-bg);
-    transform: scale(1.05);
-  }
-
-  .btn .material-icons-outlined {
-    font-size: 22px;
-    color: var(--text-primary);
-    transition: color 0.3s ease;
-  }
-
-  .ia-name {
+  .ia-version {
     background: var(--bg-tertiary);
     border: 1px solid var(--border-color);
     border-radius: 25px;
-    padding: 8px 18px;
+    padding: 8px 22px;
     font-weight: 700;
     font-size: 15px;
     color: var(--accent-color);
-    text-align: center;
+    letter-spacing: 1px;
     transition: all 0.3s ease;
   }
 
-  /* OVERLAY */
+  /* ── OVERLAY ── */
   .overlay {
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background: var(--overlay-bg);
-    opacity: 0;
-    pointer-events: none;
+    opacity: 0; pointer-events: none;
     transition: opacity 0.25s ease;
     z-index: 190;
   }
-  .overlay.active {
-    opacity: 1;
-    pointer-events: auto;
-  }
+  .overlay.active { opacity: 1; pointer-events: auto; }
 
-  /* MENU MODERNE */
+  /* ── MENU LATÉRAL ── */
   .menu {
     position: fixed;
-    top: 0;
-    left: -260px;
-    width: 260px;
-    height: 100%;
+    top: 0; left: -260px;
+    width: 260px; height: 100%;
     background: var(--bg-secondary);
     backdrop-filter: blur(10px);
     transition: left 0.28s ease, background 0.3s ease;
     border-right: 1px solid var(--border-color);
     z-index: 200;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
+    display: flex; flex-direction: column;
   }
-
   .menu.active { left: 0; }
 
   .menu-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     padding: 18px 12px;
-    font-weight: 700;
-    font-size: 17px;
+    font-weight: 700; font-size: 17px;
     color: var(--accent-color);
-    gap: 8px;
-    flex-shrink: 0;
+    gap: 8px; flex-shrink: 0;
   }
 
   .menu a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--text-secondary);
-    text-decoration: none;
-    padding: 10px 14px;
-    font-size: 15px;
+    display: flex; align-items: center; gap: 12px;
+    color: var(--text-secondary); text-decoration: none;
+    padding: 10px 14px; font-size: 15px;
     transition: background 0.2s, color 0.2s;
-    border-radius: 8px;
-    margin: 6px 8px;
-    touch-action: manipulation;
+    border-radius: 8px; margin: 6px 8px;
   }
-
-  .menu a:hover {
-    background: var(--accent-color);
-    color: #fff;
-  }
-
-  .menu a .material-icons-outlined {
-    font-size: 20px;
-  }
+  .menu a:hover { background: var(--accent-color); color: #fff; }
+  .menu a .material-icons-outlined { font-size: 20px; }
 
   .menu-footer {
-    margin-top: auto;
-    padding: 12px;
+    margin-top: auto; padding: 12px;
     border-top: 1px solid var(--border-color);
-    text-align: center;
-    flex-shrink: 0;
+    text-align: center; flex-shrink: 0;
   }
 
-  /* Bouton de connexion dans le menu */
-  .connect-btn {
-    width: 100%;
-    padding: 12px 16px;
-    background: var(--accent-color);
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'Space Grotesk', sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    touch-action: manipulation;
-  }
-
-  .connect-btn:hover {
-    background: #0284c7;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
-  }
-
-  .connect-btn:active {
-    transform: translateY(0);
-  }
-
-  /* Informations utilisateur connecté - UNE SEULE LIGNE SANS BOUTON */
-  .user-connected {
-    display: none;
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: var(--hover-bg);
-    border-radius: 12px;
-    cursor: pointer;
-    transition: background 0.2s;
-    touch-action: manipulation;
-  }
-
-  .user-connected:hover {
-    background: rgba(255,255,255,0.08);
-  }
-
-  .user-connected.active {
-    display: flex;
-  }
-
-  .user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent-color), #0284c7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    font-weight: 700;
-    color: #fff;
-    flex-shrink: 0;
-  }
-
-  .user-info {
-    flex: 1;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .user-display-name {
-    color: var(--text-primary);
-    font-weight: 600;
-    font-size: 14px;
-    transition: color 0.3s;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* MODAL D'AUTHENTIFICATION */
-  .auth-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 500;
-    backdrop-filter: blur(8px);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .auth-modal.active {
-    display: flex;
-    opacity: 1;
-  }
-
-  .auth-container {
-    background: var(--bg-secondary);
-    border-radius: 20px;
-    max-width: 450px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    transition: background 0.3s ease, border-color 0.3s ease;
-    animation: slideUp 0.3s ease;
-  }
-
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .auth-header {
-    padding: 24px 24px 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .auth-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text-primary);
-    transition: color 0.3s;
-  }
-
-  .close-auth {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    touch-action: manipulation;
-  }
-
-  .close-auth:hover {
-    background: var(--hover-bg);
-    transform: rotate(90deg);
-  }
-
-  .close-auth .material-icons-outlined {
-    font-size: 20px;
-    color: var(--text-primary);
-    transition: color 0.3s;
-  }
-
-  /* Onglets */
-  .auth-tabs {
-    display: flex;
-    gap: 8px;
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border-color);
-    transition: border-color 0.3s;
-  }
-
-  .tab-btn {
-    flex: 1;
-    padding: 10px 16px;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    color: var(--text-secondary);
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'Space Grotesk', sans-serif;
-    position: relative;
-    touch-action: manipulation;
-  }
-
-  .tab-btn:hover {
-    background: var(--hover-bg);
-  }
-
-  .tab-btn.active {
-    background: var(--accent-color);
-    color: #fff;
-  }
-
-  /* Formulaires */
-  .auth-body {
-    padding: 24px;
-  }
-
-  .auth-form {
-    display: none;
-  }
-
-  .auth-form.active {
-    display: block;
-  }
-
-  .form-group {
-    margin-bottom: 16px;
-  }
-
-  .form-label {
-    display: block;
-    color: var(--text-secondary);
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    transition: color 0.3s;
-  }
-
-  .form-input {
-    width: 100%;
-    padding: 12px 16px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    color: var(--text-primary);
-    font-size: 15px;
-    font-family: 'Space Grotesk', sans-serif;
-    transition: all 0.2s;
-  }
-
-  .form-input::placeholder {
-    color: var(--text-tertiary);
-    transition: color 0.3s;
-  }
-
-  .form-input:focus {
-    outline: none;
-    border-color: var(--accent-color);
-    background: var(--bg-secondary);
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-  }
-
-  .submit-btn {
-    width: 100%;
-    padding: 14px 16px;
-    background: var(--accent-color);
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-weight: 700;
-    font-size: 15px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'Space Grotesk', sans-serif;
-    margin-top: 8px;
-    touch-action: manipulation;
-  }
-
-  .submit-btn:hover {
-    background: #0284c7;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);
-  }
-
-  .submit-btn:active {
-    transform: translateY(0);
-  }
-
-  .form-footer {
-    text-align: center;
-    margin-top: 20px;
-    color: var(--text-tertiary);
-    font-size: 13px;
-    transition: color 0.3s;
-  }
-
-  /* Menu contextuel de déconnexion */
-  .user-menu {
-    position: fixed;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 8px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-    z-index: 300;
-    display: none;
-    min-width: 180px;
-  }
-
-  .user-menu.active {
-    display: block;
-  }
-
-  .user-menu-item {
-    padding: 10px 16px;
-    color: var(--text-primary);
-    cursor: pointer;
-    border-radius: 8px;
-    transition: background 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    touch-action: manipulation;
-  }
-
-  .user-menu-item:hover {
-    background: var(--hover-bg);
-  }
-
-  .user-menu-item.danger {
-    color: #ff4444;
-  }
-
-  .user-menu-item.danger:hover {
-    background: rgba(255, 68, 68, 0.1);
-  }
-
-  /* HISTORIQUE (accordéon) */
-  .accordion {
-    margin: 6px 8px;
-    border-radius: 8px;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
+  /* ── ACCORDÉON HISTORIQUE ── */
+  .accordion { margin: 6px 8px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
 
   .acc-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 10px 14px;
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    user-select: none;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; padding: 10px 14px;
+    background: transparent; color: var(--text-secondary);
+    cursor: pointer; user-select: none;
     transition: background 0.15s, color 0.3s;
-    touch-action: manipulation;
   }
+  .acc-header:hover { background: var(--hover-bg); }
+  .acc-title { display: flex; align-items: center; gap: 12px; font-size: 15px; }
+  .acc-chevron { transition: transform 0.2s ease, color 0.3s ease; color: var(--text-secondary); }
+  .acc-content { max-height: 0; overflow: hidden; transition: max-height 0.28s ease; background: var(--hover-bg); }
 
-  .acc-header:hover {
-    background: var(--hover-bg);
-  }
+  .history-list { max-height: 200px; overflow-y: auto; padding: 4px 0; padding-left: 46px; }
+  .history-list::-webkit-scrollbar { width: 6px; }
+  .history-list::-webkit-scrollbar-track { background: transparent; }
+  .history-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+  .history-list::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
-  .acc-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 15px;
-  }
-
-  .acc-chevron {
-    transition: transform 0.2s ease, color 0.3s ease;
-    color: var(--text-secondary);
-  }
-
-  .acc-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.28s ease;
-    background: var(--hover-bg);
-  }
-
-  /* Conteneur avec scroll pour l'historique */
-  .history-list {
-    max-height: 200px;
-    overflow-y: auto;
-    padding: 4px 0;
-    padding-left: 46px;
-  }
-
-  /* Scrollbar personnalisée */
-  .history-list::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .history-list::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .history-list::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 3px;
-  }
-
-  .history-list::-webkit-scrollbar-thumb:hover {
-    background: var(--text-tertiary);
-  }
-
-  /* Item d'historique avec bouton trois points */
   .history-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: flex; align-items: center; gap: 8px;
     padding: 8px 14px 8px 0;
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-size: 14px;
-    border-radius: 6px;
-    margin: 6px 8px 6px 0;
+    color: var(--text-secondary); font-size: 14px;
+    border-radius: 6px; margin: 6px 8px 6px 0;
     transition: background 0.2s, color 0.2s;
-    position: relative;
     cursor: pointer;
-    touch-action: manipulation;
   }
-
-  .history-item:hover {
-    background: var(--hover-bg);
-    color: var(--text-primary);
-  }
-
-  .history-item-text {
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .history-item-actions {
-    opacity: 1;
-    display: flex;
-    align-items: center;
-  }
+  .history-item:hover { background: var(--hover-bg); color: var(--text-primary); }
+  .history-item-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .history-item-actions { display: flex; align-items: center; }
 
   .delete-btn {
-    background: transparent;
-    border: none;
-    padding: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: transparent; border: none; padding: 4px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
     color: var(--text-tertiary);
-    transition: color 0.2s, transform 0.2s;
-    border-radius: 4px;
-    touch-action: manipulation;
+    transition: color 0.2s, transform 0.2s; border-radius: 4px;
   }
+  .delete-btn:hover { color: var(--accent-color); background: var(--hover-bg); transform: scale(1.1); }
+  .delete-btn .material-icons-outlined { font-size: 18px; }
 
-  .delete-btn:hover {
-    color: var(--accent-color);
-    background: var(--hover-bg);
-    transform: scale(1.1);
-  }
-
-  .delete-btn .material-icons-outlined {
-    font-size: 18px;
-  }
-
-  /* WELCOME */
+  /* ── ZONE DE BIENVENUE ── */
   .welcome {
     position: absolute;
-    top: 85px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 18px;
-    color: var(--text-secondary);
-    font-weight: 700;
-    transition: opacity 0.4s ease, transform 0.4s ease, color 0.3s ease;
+    top: 110px; left: 0; right: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding-top: 30px;
+    transition: opacity 0.4s ease, transform 0.4s ease;
   }
 
-  /* CHAT */
+  .welcome-logo {
+    width: 150px; height: 150px;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* ── CHAT ── */
   .chat {
     position: absolute;
-    top: 95px;
-    bottom: 140px;
-    left: 0;
-    right: 0;
+    top: 95px; bottom: 140px; left: 0; right: 0;
     overflow-y: auto;
     padding: 0 15px 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    touch-action: pan-y;
+    display: flex; flex-direction: column; gap: 10px;
   }
-
-  /* Scrollbar personnalisée pour le chat */
-  .chat::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  .chat::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .chat::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 4px;
-  }
-
-  .chat::-webkit-scrollbar-thumb:hover {
-    background: var(--text-tertiary);
-  }
+  .chat::-webkit-scrollbar { width: 8px; }
+  .chat::-webkit-scrollbar-track { background: transparent; }
+  .chat::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+  .chat::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
   .msg {
-    max-width: 80%;
-    padding: 10px 14px;
-    border-radius: 18px;
-    word-wrap: break-word;
-    font-size: 14px;
+    max-width: 80%; padding: 10px 14px; border-radius: 18px;
+    word-wrap: break-word; font-size: 14px;
     transition: background 0.3s ease, color 0.3s ease;
   }
+  .user { align-self: flex-end; background: var(--user-msg-bg); color: #fff; border-bottom-right-radius: 4px; }
+  .bot  { align-self: flex-start; background: var(--bot-msg-bg); color: var(--text-primary); border-bottom-left-radius: 4px; }
 
-  .user {
-    align-self: flex-end;
-    background: var(--user-msg-bg);
-    color: #fff;
-    border-bottom-right-radius: 4px;
-  }
-
-  .bot {
-    align-self: flex-start;
-    background: var(--bot-msg-bg);
-    color: var(--text-primary);
-    border-bottom-left-radius: 4px;
-  }
-
-  /* ANIMATION DES TROIS POINTS */
+  /* ── TYPING INDICATOR ── */
   .typing-indicator {
-    align-self: flex-start;
-    background: var(--bot-msg-bg);
-    color: var(--text-primary);
-    border-radius: 18px;
-    border-bottom-left-radius: 4px;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    transition: background 0.3s ease;
+    align-self: flex-start; background: var(--bot-msg-bg); color: var(--text-primary);
+    border-radius: 18px; border-bottom-left-radius: 4px;
+    padding: 10px 14px; display: flex; align-items: center; gap: 4px;
   }
-
   .typing-indicator span {
-    width: 8px;
-    height: 8px;
-    background: var(--accent-color);
-    border-radius: 50%;
-    display: inline-block;
-    animation: typing 1.4s infinite;
+    width: 8px; height: 8px; background: var(--accent-color);
+    border-radius: 50%; display: inline-block; animation: typing 1.4s infinite;
   }
-
-  .typing-indicator span:nth-child(2) {
-    animation-delay: 0.2s;
-  }
-
-  .typing-indicator span:nth-child(3) {
-    animation-delay: 0.4s;
-  }
-
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
   @keyframes typing {
-    0%, 60%, 100% {
-      transform: translateY(0);
-      opacity: 0.5;
-    }
-    30% {
-      transform: translateY(-10px);
-      opacity: 1;
-    }
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-10px); opacity: 1; }
   }
 
-  /* INPUT WRAPPER */
+  /* ── INPUT WRAPPER ── */
   .input-wrapper {
-    position: fixed;
-    bottom: 15px;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    padding: 0 12px;
-    z-index: 150;
-    touch-action: none;
+    position: fixed; bottom: 15px; left: 0; right: 0;
+    display: flex; justify-content: center;
+    padding: 0 12px; z-index: 150;
   }
 
-  /* INPUT BOX */
   .input-box {
-    width: 100%;
-    max-width: 560px;
+    width: 100%; max-width: 560px;
     background: var(--input-bg);
     border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    border-radius: 20px; padding: 12px 16px;
+    display: flex; flex-direction: column; gap: 8px;
     transition: background 0.3s ease, border-color 0.3s ease;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
-
-  body.light-mode .input-box {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  }
+  body.light-mode .input-box { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 
   /* Aperçu média */
   .media-preview-container {
-    display: none;
-    align-items: center;
-    gap: 8px;
-    padding: 8px;
-    background: var(--hover-bg);
-    border-radius: 10px;
-    transition: background 0.3s ease;
+    display: none; align-items: center; gap: 8px;
+    padding: 8px; background: var(--hover-bg); border-radius: 10px;
   }
+  .media-preview-container.active { display: flex; }
+  .media-preview { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color); }
+  .media-preview-name { font-size: 12px; color: var(--text-tertiary); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .media-remove { background: transparent; border: none; color: #ff4444; cursor: pointer; padding: 0; display: flex; align-items: center; }
+  .media-remove:hover { transform: scale(1.1); }
+  .media-remove .material-icons-outlined { font-size: 20px; }
 
-  .media-preview-container.active {
-    display: flex;
-  }
-
-  .media-preview {
-    width: 40px;
-    height: 40px;
-    object-fit: cover;
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
-  }
-
-  .media-preview-name {
-    font-size: 12px;
-    color: var(--text-tertiary);
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    transition: color 0.3s ease;
-  }
-
-  .media-remove {
-    background: transparent;
-    border: none;
-    color: #ff4444;
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s;
-    touch-action: manipulation;
-  }
-
-  .media-remove:hover {
-    transform: scale(1.1);
-  }
-
-  .media-remove .material-icons-outlined {
-    font-size: 20px;
-  }
-
-  /* Zone de texte */
-  .input-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  /* Ligne de saisie texte */
+  .input-row { display: flex; align-items: center; gap: 8px; }
 
   .input-row input {
+    flex: 1; background: transparent; border: none;
+    color: var(--text-primary); font-size: 16px; outline: none;
+    transition: color 0.3s ease;
+  }
+  .input-row input::placeholder { color: var(--text-tertiary); }
+
+  /* Zone vocale (remplace l'input quand mode haut-parleur) */
+  .voice-input-area {
+    display: none;
     flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--text-primary);
-    font-size: 16px;
-    outline: none;
-    transition: color 0.3s ease;
-  }
-
-  .input-row input::placeholder {
-    color: var(--text-tertiary);
-    transition: color 0.3s ease;
-  }
-
-  /* Bouton envoyer */
-  .send-btn {
-    background: #333;
-    border: none;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    color: #fff;
-    display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
+    gap: 4px;
+    height: 28px;
+    overflow: hidden;
+  }
+  .voice-input-area.active { display: flex; }
+
+  /* Barres de visualisation vocale */
+  .voice-bar {
+    width: 3px;
+    border-radius: 3px;
+    background: var(--accent-color);
+    transition: height 0.08s ease;
+    min-height: 3px;
+  }
+
+  .send-btn {
+    background: #333; border: none;
+    width: 38px; height: 38px; border-radius: 50%;
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background 0.3s, transform 0.2s;
     flex-shrink: 0;
-    touch-action: manipulation;
   }
+  .send-btn:active { transform: scale(0.95); }
+  .icon { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  .send-btn:active {
-    transform: scale(0.95);
-  }
-
-  .icon {
-    width: 20px;
-    height: 20px;
-    fill: none;
-    stroke: #fff;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  /* Boutons média et vocal */
+  /* Ligne de boutons bas */
   .button-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: flex; align-items: center; gap: 8px;
     padding-top: 4px;
     border-top: 1px solid var(--border-color);
     transition: border-color 0.3s ease;
   }
 
   .media-btn {
-    background: transparent;
-    border: none;
+    background: transparent; border: none;
     color: var(--text-tertiary);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    padding: 6px 10px;
-    border-radius: 8px;
+    display: flex; align-items: center; gap: 6px;
+    cursor: pointer; font-size: 13px;
+    padding: 6px 10px; border-radius: 8px;
     transition: background 0.2s, color 0.2s;
-    touch-action: manipulation;
   }
+  .media-btn:hover { background: var(--hover-bg); color: var(--text-primary); }
+  .media-btn .material-icons-outlined { font-size: 18px; }
 
-  .media-btn:hover:not(:disabled) {
-    background: var(--hover-bg);
-    color: var(--text-primary);
+  /* Bouton clavier / haut-parleur — extrémité droite */
+  .btn-keyboard-voice {
+    margin-left: auto;
+    background: transparent; border: none;
+    color: var(--text-tertiary);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    padding: 6px; border-radius: 8px;
+    transition: background 0.2s, color 0.2s, transform 0.15s;
   }
+  .btn-keyboard-voice:hover { background: var(--hover-bg); color: var(--accent-color); transform: scale(1.1); }
+  .btn-keyboard-voice.speaker-active .material-icons-outlined { color: var(--accent-color); }
 
-  .media-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
+  #mediaInput { display: none; }
 
-  .media-btn .material-icons-outlined {
-    font-size: 18px;
-  }
-
-  #mediaInput {
-    display: none;
-  }
-
-  /* Notification */
+  /* ── NOTIFICATION ── */
   .notification {
-    position: fixed;
-    top: 80px;
-    left: 50%;
+    position: fixed; top: 80px; left: 50%;
     transform: translateX(-50%);
     background: var(--bg-secondary);
     border: 1px solid var(--accent-color);
     color: var(--text-primary);
-    padding: 12px 24px;
-    border-radius: 12px;
-    z-index: 300;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease, background 0.3s ease, color 0.3s ease;
+    padding: 10px 20px; border-radius: 20px;
+    font-size: 14px; font-weight: 600;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease, top 0.3s ease;
+    z-index: 500; white-space: nowrap;
   }
+  .notification.show { opacity: 1; top: 75px; }
 
-  .notification.show {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  /* Modal de confirmation */
+  /* ── MODAL CONFIRMATION ── */
   .confirm-modal {
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background: rgba(0,0,0,0.5);
-    display: none;
-    align-items: center;
-    justify-content: center;
+    display: none; align-items: center; justify-content: center;
     z-index: 400;
   }
-
-  .confirm-modal.active {
-    display: flex;
-  }
-
+  .confirm-modal.active { display: flex; }
   .confirm-content {
-    background: var(--bg-secondary);
-    padding: 24px;
-    border-radius: 16px;
-    max-width: 400px;
-    width: 90%;
+    background: var(--bg-secondary); padding: 24px;
+    border-radius: 16px; max-width: 400px; width: 90%;
     border: 1px solid var(--border-color);
     box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-    transition: background 0.3s ease, border-color 0.3s ease;
   }
+  .confirm-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; }
+  .confirm-message { color: var(--text-secondary); margin-bottom: 24px; }
+  .confirm-buttons { display: flex; gap: 12px; justify-content: flex-end; }
+  .confirm-btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+  .confirm-btn.cancel { background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); }
+  .confirm-btn.cancel:hover { background: var(--hover-bg); }
+  .confirm-btn.delete { background: #ff4444; color: #fff; }
+  .confirm-btn.delete:hover { background: #cc0000; }
 
-  .confirm-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 12px;
-    transition: color 0.3s ease;
-  }
-
-  .confirm-message {
-    color: var(--text-secondary);
-    margin-bottom: 24px;
-    transition: color 0.3s ease;
-  }
-
-  .confirm-buttons {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-  }
-
-  .confirm-btn {
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.2s;
-    touch-action: manipulation;
-  }
-
-  .confirm-btn.cancel {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-  }
-
-  .confirm-btn.cancel:hover {
-    background: var(--hover-bg);
-  }
-
-  .confirm-btn.delete {
-    background: #ff4444;
-    color: #fff;
-  }
-
-  .confirm-btn.delete:hover {
-    background: #cc0000;
-  }
-
-  /* Responsive */
   @media (max-width: 420px) {
     .menu { width: 240px; left: -240px; }
     .input-box { max-width: 420px; }
@@ -1087,19 +392,23 @@
 
   <!-- HEADER -->
   <div class="header">
-    <button class="btn" id="menuBtn" aria-label="Ouvrir le menu"><span class="material-icons-outlined">menu</span></button>
-    <div class="ia-name">Starky</div>
-    <button class="btn" id="themeBtn" aria-label="Thème"><span class="material-icons-outlined">light_mode</span></button>
+    <button class="btn" id="menuBtn" aria-label="Ouvrir le menu">
+      <span class="material-icons-outlined">menu</span>
+    </button>
+    <div class="ia-version">V1.0</div>
+    <button class="btn" id="themeBtn" aria-label="Thème">
+      <span class="material-icons-outlined">light_mode</span>
+    </button>
   </div>
 
   <!-- OVERLAY -->
   <div id="overlay" class="overlay" tabindex="-1"></div>
 
-  <!-- MENU MODERNE -->
+  <!-- MENU LATÉRAL -->
   <nav class="menu" id="sideMenu" aria-hidden="true" aria-label="Menu principal">
     <div class="menu-header">
       <span class="material-icons-outlined">chat</span>
-      <span style="font-weight:700;">Starky</span>
+      <span>Starky</span>
     </div>
 
     <a href="#" id="newChatLink"><span class="material-icons-outlined">chat</span>New Chat</a>
@@ -1110,9 +419,7 @@
         <span class="material-icons-outlined acc-chevron" id="accChevron">expand_more</span>
       </div>
       <div class="acc-content" id="accContent" aria-hidden="true">
-        <div class="history-list" id="historyList">
-          <!-- Les conversations seront ajoutées ici dynamiquement -->
-        </div>
+        <div class="history-list" id="historyList"></div>
       </div>
     </div>
 
@@ -1121,103 +428,27 @@
     <a href="#"><span class="material-icons-outlined">settings</span>Paramètres</a>
 
     <div class="menu-footer">
-      <!-- Bouton de connexion (affiché si non connecté) -->
-      <button class="connect-btn" id="openAuthBtn">
-        <span class="material-icons-outlined">login</span>
-        <span>Se connecter</span>
-      </button>
-
-      <!-- Informations utilisateur (affiché si connecté) - UNE SEULE LIGNE SANS BOUTON -->
-      <div class="user-connected" id="userConnected">
-        <div class="user-avatar" id="userAvatar">JS</div>
-        <div class="user-info">
-          <div class="user-display-name" id="userDisplayName">john.doe@example.com</div>
-        </div>
+      <div id="g_id_onload"
+           data-client_id="YOUR_GOOGLE_CLIENT_ID"
+           data-context="signin"
+           data-ux_mode="popup"
+           data-callback="onSignIn">
       </div>
+      <div id="g_id_signin" class="g_id_signin" data-type="standard"></div>
     </div>
   </nav>
 
-  <!-- Menu contextuel de l'utilisateur -->
-  <div class="user-menu" id="userMenu">
-    <div class="user-menu-item" id="profileMenuItem">
-      <span class="material-icons-outlined" style="font-size: 18px;">person</span>
-      <span>Profil</span>
-    </div>
-    <div class="user-menu-item danger" id="disconnectMenuItem">
-      <span class="material-icons-outlined" style="font-size: 18px;">logout</span>
-      <span>Se déconnecter</span>
-    </div>
+  <!-- WELCOME : logo statique -->
+  <div id="welcome" class="welcome">
+    <img id="welcomeLogo" class="welcome-logo" src="" alt="Starky">
   </div>
-
-  <!-- MODAL D'AUTHENTIFICATION -->
-  <div class="auth-modal" id="authModal">
-    <div class="auth-container">
-      <div class="auth-header">
-        <div class="auth-title">Bienvenue</div>
-        <button class="close-auth" id="closeAuthBtn">
-          <span class="material-icons-outlined">close</span>
-        </button>
-      </div>
-
-      <!-- Onglets -->
-      <div class="auth-tabs">
-        <button class="tab-btn active" data-tab="login">Connexion</button>
-        <button class="tab-btn" data-tab="register">Inscription</button>
-      </div>
-
-      <!-- Corps -->
-      <div class="auth-body">
-        <!-- Formulaire de connexion -->
-        <form class="auth-form active" id="loginForm">
-          <div class="form-group">
-            <label class="form-label" for="loginEmail">Email</label>
-            <input type="email" class="form-input" id="loginEmail" placeholder="votreemail@example.com" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="loginPassword">Mot de passe</label>
-            <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
-          </div>
-          <button type="submit" class="submit-btn">Se connecter</button>
-          <div class="form-footer">
-            Vous n'avez pas de compte ? <a href="#" class="switch-tab" data-tab="register" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">Inscrivez-vous</a>
-          </div>
-        </form>
-
-        <!-- Formulaire d'inscription -->
-        <form class="auth-form" id="registerForm">
-          <div class="form-group">
-            <label class="form-label" for="registerFirstName">Prénom</label>
-            <input type="text" class="form-input" id="registerFirstName" placeholder="Votre prénom" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="registerLastName">Nom</label>
-            <input type="text" class="form-input" id="registerLastName" placeholder="Votre nom" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="registerEmail">Email</label>
-            <input type="email" class="form-input" id="registerEmail" placeholder="votreemail@example.com" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="registerPassword">Mot de passe</label>
-            <input type="password" class="form-input" id="registerPassword" placeholder="••••••••" required>
-          </div>
-          <button type="submit" class="submit-btn">S'inscrire</button>
-          <div class="form-footer">
-            Vous avez déjà un compte ? <a href="#" class="switch-tab" data-tab="login" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">Connectez-vous</a>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <div id="welcome" class="welcome"><strong>Bienvenue sur Starky</strong> 😊</div>
 
   <div id="chat" class="chat" role="log" aria-live="polite"></div>
 
   <!-- Notification -->
   <div id="notification" class="notification"></div>
 
-  <!-- Modal de confirmation -->
+  <!-- Modal confirmation -->
   <div id="confirmModal" class="confirm-modal">
     <div class="confirm-content">
       <div class="confirm-title">Confirmer la suppression</div>
@@ -1232,6 +463,7 @@
   <!-- INPUT WRAPPER -->
   <div class="input-wrapper">
     <div class="input-box">
+
       <!-- Aperçu média -->
       <div class="media-preview-container" id="mediaPreview">
         <img class="media-preview" id="previewImage" src="" alt="Aperçu">
@@ -1241,104 +473,88 @@
         </button>
       </div>
 
-      <!-- Zone de texte -->
+      <!-- Ligne saisie -->
       <div class="input-row">
+        <!-- Mode texte -->
         <input id="prompt" type="text" placeholder="Écrire un message..." autocomplete="off" aria-label="Message">
+
+        <!-- Mode vocal : barres de visualisation -->
+        <div class="voice-input-area" id="voiceInputArea">
+          <!-- Les barres sont générées en JS -->
+        </div>
+
         <button id="actionBtn" class="send-btn" aria-label="Envoyer">
-          <svg class="icon" id="iconSend" viewBox="0 0 24 24">
+          <svg class="icon" viewBox="0 0 24 24">
             <path d="M22 2L11 13"/>
             <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
           </svg>
         </button>
       </div>
 
-      <!-- Boutons média et vocal -->
+      <!-- Boutons bas : fichier | clavier/haut-parleur -->
       <div class="button-row">
         <button class="media-btn" id="mediaBtn">
           <span class="material-icons-outlined">attach_file</span>
-          <span>Média</span>
-        </button>
-        <button class="media-btn" id="voiceBtn" disabled title="Chat vocal - Prochainement">
-          <span class="material-icons-outlined">mic</span>
-          <span>Chat vocal</span>
+          <span>Fichier</span>
         </button>
         <input type="file" id="mediaInput" accept="image/*,video/*,audio/*" multiple>
+
+        <!-- Switch clavier ↔ haut-parleur -->
+        <button class="btn-keyboard-voice" id="keyboardVoiceBtn" aria-label="Basculer clavier / haut-parleur">
+          <span class="material-icons-outlined" id="keyboardVoiceIcon">keyboard</span>
+        </button>
       </div>
     </div>
   </div>
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 <script>
-  // ===========================
-  // BLOQUER ACTIONS PAR DÉFAUT
-  // ===========================
-  // Empêcher le menu contextuel (clic droit)
-  document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-  }, false);
+  // ── Logos GitHub raw ────────────────────────────────────────────────────────
+  const LOGO_DARK_URL  = 'https://raw.githubusercontent.com/Jonnhy2255/Starky-AI/main/Dark.png';
+  const LOGO_LIGHT_URL = 'https://raw.githubusercontent.com/Jonnhy2255/Starky-AI/main/Light.png';
+  const LS_KEY_DARK    = 'starky_logo_dark_b64';
+  const LS_KEY_LIGHT   = 'starky_logo_light_b64';
 
-  // Empêcher la sélection de texte par double-clic ou drag
-  document.addEventListener('selectstart', function(e) {
-    // Autoriser la sélection dans les inputs et textareas
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-      return true;
+  async function fetchLogoAsBase64(url) {
+    const resp = await fetch(url);
+    const blob = await resp.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function getLogo(theme) {
+    const lsKey = theme === 'dark' ? LS_KEY_DARK  : LS_KEY_LIGHT;
+    const url   = theme === 'dark' ? LOGO_DARK_URL : LOGO_LIGHT_URL;
+    try {
+      const cached = localStorage.getItem(lsKey);
+      if (cached) return cached;
+    } catch(e) {}
+    try {
+      const b64 = await fetchLogoAsBase64(url);
+      try { localStorage.setItem(lsKey, b64); } catch(e) {}
+      return b64;
+    } catch(e) {
+      console.warn('Logo introuvable :', url);
+      return null;
     }
-    e.preventDefault();
-  }, false);
+  }
 
-  // Empêcher le drag d'images
-  document.addEventListener('dragstart', function(e) {
-    if (e.target.tagName === 'IMG') {
-      e.preventDefault();
-    }
-  }, false);
+  const welcomeLogo = document.getElementById('welcomeLogo');
 
-  // Empêcher certaines combinaisons de touches (Ctrl+A, Ctrl+C, etc.)
-  document.addEventListener('keydown', function(e) {
-    // Si on est dans un input ou textarea, on autorise
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-      return true;
-    }
+  async function applyLogos(theme) {
+    const src = await getLogo(theme);
+    if (src) welcomeLogo.src = src;
+  }
 
-    // Bloquer Ctrl+A (tout sélectionner)
-    if (e.ctrlKey && e.key === 'a') {
-      e.preventDefault();
-    }
-    // Bloquer Ctrl+C (copier)
-    if (e.ctrlKey && e.key === 'c') {
-      e.preventDefault();
-    }
-  }, false);
-
-  // Empêcher le zoom par double-tap
-  let lastTouchEnd = 0;
-  document.addEventListener('touchend', function(e) {
-    const now = (new Date()).getTime();
-    if (now - lastTouchEnd <= 300) {
-      e.preventDefault();
-    }
-    lastTouchEnd = now;
-  }, false);
-
-  // Empêcher le zoom par pinch
-  document.addEventListener('gesturestart', function(e) {
-    e.preventDefault();
-  });
-
-  document.addEventListener('gesturechange', function(e) {
-    e.preventDefault();
-  });
-
-  document.addEventListener('gestureend', function(e) {
-    e.preventDefault();
-  });
-
-  // ===========================
-  // VARIABLES GLOBALES
-  // ===========================
-  // Définir --vh pour gérer la hauteur visible
+  // ── VH dynamique ────────────────────────────────────────────────────────────
   function setVh() {
-    const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    document.documentElement.style.setProperty('--vh', (height * 0.01) + 'px');
+    const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
   }
   setVh();
   if (window.visualViewport) {
@@ -1348,303 +564,169 @@
     window.addEventListener('resize', setVh);
   }
 
-  const input = document.getElementById('prompt');
-  const chat = document.getElementById('chat');
-  const iconSend = document.getElementById('iconSend');
-  const actionBtn = document.getElementById('actionBtn');
-  const welcome = document.getElementById('welcome');
-  const menuBtn = document.getElementById('menuBtn');
-  const sideMenu = document.getElementById('sideMenu');
-  const overlay = document.getElementById('overlay');
-  const themeBtn = document.getElementById('themeBtn');
+  // ── Refs DOM ────────────────────────────────────────────────────────────────
+  const input             = document.getElementById('prompt');
+  const chat              = document.getElementById('chat');
+  const actionBtn         = document.getElementById('actionBtn');
+  const welcome           = document.getElementById('welcome');
+  const menuBtn           = document.getElementById('menuBtn');
+  const sideMenu          = document.getElementById('sideMenu');
+  const overlay           = document.getElementById('overlay');
+  const themeBtn          = document.getElementById('themeBtn');
+  const accHeader         = document.getElementById('accHeader');
+  const accContent        = document.getElementById('accContent');
+  const accChevron        = document.getElementById('accChevron');
+  const historyList       = document.getElementById('historyList');
+  const mediaBtn          = document.getElementById('mediaBtn');
+  const mediaInput        = document.getElementById('mediaInput');
+  const mediaPreview      = document.getElementById('mediaPreview');
+  const previewImage      = document.getElementById('previewImage');
+  const previewName       = document.getElementById('previewName');
+  const removeMedia       = document.getElementById('removeMedia');
+  const confirmModal      = document.getElementById('confirmModal');
+  const cancelDelete      = document.getElementById('cancelDelete');
+  const confirmDelete     = document.getElementById('confirmDelete');
+  const keyboardVoiceBtn  = document.getElementById('keyboardVoiceBtn');
+  const keyboardVoiceIcon = document.getElementById('keyboardVoiceIcon');
+  const voiceInputArea    = document.getElementById('voiceInputArea');
 
-  const accHeader = document.getElementById('accHeader');
-  const accContent = document.getElementById('accContent');
-  const accChevron = document.getElementById('accChevron');
-  const historyList = document.getElementById('historyList');
-
-  const mediaBtn = document.getElementById('mediaBtn');
-  const voiceBtn = document.getElementById('voiceBtn');
-  const mediaInput = document.getElementById('mediaInput');
-  const mediaPreview = document.getElementById('mediaPreview');
-  const previewImage = document.getElementById('previewImage');
-  const previewName = document.getElementById('previewName');
-  const removeMedia = document.getElementById('removeMedia');
-
-  const confirmModal = document.getElementById('confirmModal');
-  const cancelDelete = document.getElementById('cancelDelete');
-  const confirmDelete = document.getElementById('confirmDelete');
-
-  // Éléments d'authentification
-  const authModal = document.getElementById('authModal');
-  const openAuthBtn = document.getElementById('openAuthBtn');
-  const closeAuthBtn = document.getElementById('closeAuthBtn');
-  const loginForm = document.getElementById('loginForm');
-  const registerForm = document.getElementById('registerForm');
-  const userConnected = document.getElementById('userConnected');
-  const userDisplayName = document.getElementById('userDisplayName');
-  const userAvatar = document.getElementById('userAvatar');
-  const userMenu = document.getElementById('userMenu');
-  const disconnectMenuItem = document.getElementById('disconnectMenuItem');
-  const profileMenuItem = document.getElementById('profileMenuItem');
-
-  let selectedFile = null;
-  let conversationHistory = [];
+  // ── État ────────────────────────────────────────────────────────────────────
+  let selectedFile           = null;
+  let conversationHistory    = [];
   let conversationIdToDelete = null;
-  let currentConversationId = null;
-  let isFirstMessage = true;
-  let currentUser = null;
+  let currentConversationId  = null;
+  let isFirstMessage         = true;
+  let isDarkMode             = true;
+  let isSpeakerMode          = false;
 
-  // ===========================
-  // GESTION DE L'AUTHENTIFICATION
-  // ===========================
+  // ── Barres de visualisation vocale ─────────────────────────────────────────
+  const BAR_COUNT = 28;
+  const voiceBars = [];
 
-  // Ouvrir la modal d'authentification
-  openAuthBtn.addEventListener('click', function() {
-    authModal.classList.add('active');
-    closeMenu();
-  });
-
-  // Fermer la modal d'authentification
-  closeAuthBtn.addEventListener('click', function() {
-    authModal.classList.remove('active');
-  });
-
-  // Fermer en cliquant à l'extérieur
-  authModal.addEventListener('click', function(e) {
-    if (e.target === authModal) {
-      authModal.classList.remove('active');
+  (function buildVoiceBars() {
+    for (let i = 0; i < BAR_COUNT; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'voice-bar';
+      bar.style.height = '3px';
+      voiceInputArea.appendChild(bar);
+      voiceBars.push(bar);
     }
-  });
+  })();
 
-  // Gestion des onglets
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  const authForms = document.querySelectorAll('.auth-form');
+  let voiceAnimFrame = null;
+  let audioContext   = null;
+  let analyser       = null;
+  let micStream      = null;
+  let dataArray      = null;
 
-  tabBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-      const targetTab = this.getAttribute('data-tab');
-
-      // Mettre à jour les boutons d'onglets
-      tabBtns.forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-
-      // Afficher le bon formulaire
-      authForms.forEach(form => {
-        if (form.id === targetTab + 'Form') {
-          form.classList.add('active');
-        } else {
-          form.classList.remove('active');
-        }
-      });
-    });
-  });
-
-  // Gestion des liens de basculement entre formulaires
-  const switchTabLinks = document.querySelectorAll('.switch-tab');
-  switchTabLinks.forEach(link => {
-    link.addEventListener('click', function(e) {
-      e.preventDefault();
-      const targetTab = this.getAttribute('data-tab');
-      const targetBtn = document.querySelector(`.tab-btn[data-tab="${targetTab}"]`);
-      if (targetBtn) {
-        targetBtn.click();
-      }
-    });
-  });
-
-  // Soumission du formulaire de connexion
-  loginForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-
-    if (!email || !password) {
-      showNotification('Veuillez remplir tous les champs');
-      return;
-    }
-
-    // Validation email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      showNotification('Adresse email invalide');
-      return;
-    }
-
-    // Simulation de connexion (à remplacer par une vraie authentification)
-    currentUser = {
-      firstName: 'John',
-      lastName: 'Doe',
-      email: email
-    };
-
-    updateUserDisplay();
-    authModal.classList.remove('active');
-    showNotification('Connexion réussie !');
-
-    // Réinitialiser le formulaire
-    loginForm.reset();
-  });
-
-  // Soumission du formulaire d'inscription
-  registerForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const firstName = document.getElementById('registerFirstName').value.trim();
-    const lastName = document.getElementById('registerLastName').value.trim();
-    const email = document.getElementById('registerEmail').value.trim();
-    const password = document.getElementById('registerPassword').value.trim();
-
-    if (!firstName || !lastName || !email || !password) {
-      showNotification('Veuillez remplir tous les champs');
-      return;
-    }
-
-    // Validation email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      showNotification('Adresse email invalide');
-      return;
-    }
-
-    // Validation mot de passe
-    if (password.length < 6) {
-      showNotification('Le mot de passe doit contenir au moins 6 caractères');
-      return;
-    }
-
-    // Simulation d'inscription (à remplacer par une vraie authentification)
-    currentUser = {
-      firstName: firstName,
-      lastName: lastName,
-      email: email
-    };
-
-    updateUserDisplay();
-    authModal.classList.remove('active');
-    showNotification('Inscription réussie !');
-
-    // Réinitialiser le formulaire
-    registerForm.reset();
-  });
-
-  // Mettre à jour l'affichage utilisateur
-  function updateUserDisplay() {
-    if (currentUser) {
-      // Cacher le bouton de connexion
-      openAuthBtn.style.display = 'none';
-
-      // Afficher les infos utilisateur
-      userConnected.classList.add('active');
-
-      // Afficher soit le nom complet, soit l'email
-      const displayText = currentUser.firstName && currentUser.lastName
-        ? `${currentUser.firstName} ${currentUser.lastName}`
-        : currentUser.email;
-
-      userDisplayName.textContent = displayText;
-
-      // Avatar avec initiales
-      let initials;
-      if (currentUser.firstName && currentUser.lastName) {
-        initials = currentUser.firstName.charAt(0) + currentUser.lastName.charAt(0);
-      } else {
-        // Si pas de nom, utiliser les 2 premières lettres de l'email
-        initials = currentUser.email.substring(0, 2);
-      }
-      userAvatar.textContent = initials.toUpperCase();
-    } else {
-      // Afficher le bouton de connexion
-      openAuthBtn.style.display = 'flex';
-
-      // Cacher les infos utilisateur
-      userConnected.classList.remove('active');
+  async function startVoiceVisualizer() {
+    try {
+      micStream    = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioContext.createMediaStreamSource(micStream);
+      analyser     = audioContext.createAnalyser();
+      analyser.fftSize = 64;
+      source.connect(analyser);
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      animateVoiceBars();
+    } catch(e) {
+      // Micro non disponible : simulation douce
+      simulateVoiceBars();
     }
   }
 
-  // Gestion du menu contextuel utilisateur
-  userConnected.addEventListener('click', function(e) {
-    e.stopPropagation();
-    const rect = userConnected.getBoundingClientRect();
-    userMenu.style.left = rect.left + 'px';
-    userMenu.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
-    userMenu.classList.toggle('active');
-  });
+  function animateVoiceBars() {
+    if (!isSpeakerMode) return;
+    analyser.getByteFrequencyData(dataArray);
+    const step = Math.floor(dataArray.length / BAR_COUNT);
+    voiceBars.forEach((bar, i) => {
+      const val    = dataArray[i * step] || 0;           // 0–255
+      const maxPx  = 24;
+      const height = Math.max(3, (val / 255) * maxPx);
+      bar.style.height = height + 'px';
+    });
+    voiceAnimFrame = requestAnimationFrame(animateVoiceBars);
+  }
 
-  // Fermer le menu utilisateur en cliquant ailleurs
-  document.addEventListener('click', function(e) {
-    if (!userMenu.contains(e.target) && !userConnected.contains(e.target)) {
-      userMenu.classList.remove('active');
+  function simulateVoiceBars() {
+    if (!isSpeakerMode) return;
+    voiceBars.forEach((bar, i) => {
+      const noise  = Math.sin(Date.now() * 0.003 + i * 0.6) * 0.5 + 0.5;
+      const rand   = Math.random() * 0.3;
+      const height = Math.max(3, (noise + rand) * 18);
+      bar.style.height = height + 'px';
+    });
+    voiceAnimFrame = requestAnimationFrame(simulateVoiceBars);
+  }
+
+  function stopVoiceVisualizer() {
+    if (voiceAnimFrame) { cancelAnimationFrame(voiceAnimFrame); voiceAnimFrame = null; }
+    if (micStream)      { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+    if (audioContext)   { audioContext.close(); audioContext = null; }
+    analyser  = null;
+    dataArray = null;
+    // Réinitialiser les barres
+    voiceBars.forEach(b => b.style.height = '3px');
+  }
+
+  // ── Switch clavier ↔ haut-parleur ─────────────────────────────────────────
+  keyboardVoiceBtn.addEventListener('click', () => {
+    isSpeakerMode = !isSpeakerMode;
+
+    if (isSpeakerMode) {
+      // Passer en mode vocal
+      keyboardVoiceIcon.textContent = 'volume_up';
+      keyboardVoiceBtn.classList.add('speaker-active');
+      input.style.display        = 'none';
+      voiceInputArea.classList.add('active');
+      mediaPreview.classList.remove('active'); // cacher aperçu fichier si ouvert
+      startVoiceVisualizer();
+    } else {
+      // Revenir en mode clavier
+      keyboardVoiceIcon.textContent = 'keyboard';
+      keyboardVoiceBtn.classList.remove('speaker-active');
+      stopVoiceVisualizer();
+      voiceInputArea.classList.remove('active');
+      input.style.display = '';
+      input.focus();
     }
   });
 
-  // Déconnexion
-  disconnectMenuItem.addEventListener('click', function() {
-    currentUser = null;
-    updateUserDisplay();
-    userMenu.classList.remove('active');
-    showNotification('Déconnexion réussie');
-  });
+  // ── Thème ───────────────────────────────────────────────────────────────────
+  applyLogos('dark');
 
-  // Profil
-  profileMenuItem.addEventListener('click', function() {
-    userMenu.classList.remove('active');
-    showNotification('Profil - Fonctionnalité à venir');
-  });
-
-  // ===========================
-  // GESTION DU THÈME
-  // ===========================
-  let isDarkMode = true;
   themeBtn.addEventListener('click', () => {
     isDarkMode = !isDarkMode;
     if (isDarkMode) {
       document.body.classList.remove('light-mode');
       themeBtn.querySelector('.material-icons-outlined').textContent = 'light_mode';
+      applyLogos('dark');
     } else {
       document.body.classList.add('light-mode');
       themeBtn.querySelector('.material-icons-outlined').textContent = 'dark_mode';
+      applyLogos('light');
     }
   });
 
-  // ===========================
-  // GESTION DES MÉDIAS
-  // ===========================
+  // ── Fichier ─────────────────────────────────────────────────────────────────
+  mediaBtn.addEventListener('click', () => { if (!isSpeakerMode) mediaInput.click(); });
 
-  // Ouvrir sélecteur de fichiers
-  mediaBtn.addEventListener('click', () => {
-    mediaInput.click();
-  });
-
-  // Gestion du bouton vocal (inactif pour l'instant)
-  voiceBtn.addEventListener('click', () => {
-    showNotification('Fonctionnalité de chat vocal - Prochainement disponible');
-  });
-
-  // Gestion de la sélection de fichier
   mediaInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
       selectedFile = file;
-
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
-        reader.onload = (event) => {
-          previewImage.src = event.target.result;
-          previewImage.style.display = 'block';
-        };
+        reader.onload = ev => { previewImage.src = ev.target.result; previewImage.style.display = 'block'; };
         reader.readAsDataURL(file);
       } else {
         previewImage.style.display = 'none';
       }
-
       previewName.textContent = file.name;
       mediaPreview.classList.add('active');
     }
   });
 
-  // Supprimer le média
   removeMedia.addEventListener('click', (e) => {
     e.stopPropagation();
     selectedFile = null;
@@ -1654,163 +736,46 @@
     previewName.textContent = '';
   });
 
-  // Mise à jour du style du bouton send
+  // ── Couleur bouton envoi ────────────────────────────────────────────────────
   input.addEventListener('input', () => {
-    const hasText = input.value.trim().length > 0;
-    actionBtn.style.background = hasText || selectedFile ? '#0ea5e9' : '#333';
+    actionBtn.style.background = input.value.trim().length > 0 || selectedFile ? '#0ea5e9' : '#333';
   });
 
-  // ===========================
-  // GESTION DU CHAT
-  // ===========================
-
-  // Ajouter un message
+  // ── Messages ────────────────────────────────────────────────────────────────
   function addMessage(text, sender, fileInfo = null) {
-    if (welcome.style.display !== "none") {
-      welcome.style.opacity = "0";
-      welcome.style.transform = "translateY(-20px)";
-      setTimeout(() => welcome.style.display = "none", 400);
+    if (welcome.style.display !== 'none') {
+      welcome.style.opacity   = '0';
+      welcome.style.transform = 'translateY(-20px)';
+      setTimeout(() => welcome.style.display = 'none', 400);
     }
     const msg = document.createElement('div');
-    msg.className = 'msg ' + sender;
-
-    if (fileInfo) {
-      msg.textContent = text + ' [Fichier joint: ' + fileInfo + ']';
-    } else {
-      msg.textContent = text;
-    }
-
+    msg.className   = 'msg ' + sender;
+    msg.textContent = fileInfo ? text + ' [Fichier joint: ' + fileInfo + ']' : text;
     chat.appendChild(msg);
-    requestAnimationFrame(() => {
-      chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
-    });
+    requestAnimationFrame(() => chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' }));
     return msg;
   }
 
-  // Ajouter l'indicateur de saisie
   function addTypingIndicator() {
-    const typing = document.createElement('div');
-    typing.className = 'typing-indicator';
-    typing.innerHTML = '<span></span><span></span><span></span>';
-    chat.appendChild(typing);
-    requestAnimationFrame(() => {
-      chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
-    });
-    return typing;
+    const t = document.createElement('div');
+    t.className = 'typing-indicator';
+    t.innerHTML = '<span></span><span></span><span></span>';
+    chat.appendChild(t);
+    requestAnimationFrame(() => chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' }));
+    return t;
   }
 
-  // Supprimer l'indicateur de saisie
-  function removeTypingIndicator(typingElement) {
-    if (typingElement && typingElement.parentNode) {
-      typingElement.parentNode.removeChild(typingElement);
-    }
-  }
+  function removeTypingIndicator(el) { if (el && el.parentNode) el.parentNode.removeChild(el); }
 
-  // ===========================
-  // GESTION DE L'HISTORIQUE
-  // ===========================
-
-  // Fonction pour créer un item d'historique
-  function createHistoryItem(conversation) {
-    const item = document.createElement('div');
-    item.className = 'history-item';
-    item.dataset.id = conversation.id;
-
-    const textSpan = document.createElement('span');
-    textSpan.className = 'history-item-text';
-    textSpan.textContent = conversation.title;
-
-    const actionsDiv = document.createElement('div');
-    actionsDiv.className = 'history-item-actions';
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.setAttribute('aria-label', 'Options');
-    deleteBtn.innerHTML = '<span class="material-icons-outlined">more_vert</span>';
-    deleteBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      conversationIdToDelete = conversation.id;
-      confirmModal.classList.add('active');
-    });
-
-    actionsDiv.appendChild(deleteBtn);
-    item.appendChild(textSpan);
-    item.appendChild(actionsDiv);
-
-    item.addEventListener('click', () => {
-      showNotification('Chargement de: ' + conversation.title);
-      closeMenu();
-    });
-
-    return item;
-  }
-
-  // Mettre à jour l'historique
-  function updateHistoryList() {
-    historyList.innerHTML = '';
-    conversationHistory.forEach(conv => {
-      historyList.appendChild(createHistoryItem(conv));
-    });
-
-    // Ajuster la hauteur du contenu de l'accordéon si ouvert
-    if (accOpen) {
-      accContent.style.maxHeight = accContent.scrollHeight + "px";
-    }
-  }
-
-  // Ajouter une conversation à l'historique (uniquement pour le premier message)
-  function addToHistory(title) {
-    const newConv = {
-      id: Date.now(),
-      title: title,
-      date: new Date()
-    };
-    conversationHistory.unshift(newConv);
-    currentConversationId = newConv.id;
-    updateHistoryList();
-  }
-
-  // Supprimer une conversation
-  function deleteConversation(id) {
-    conversationHistory = conversationHistory.filter(conv => conv.id !== id);
-    updateHistoryList();
-    showNotification('Conversation supprimée');
-  }
-
-  // Gestion de la modal de confirmation
-  cancelDelete.addEventListener('click', () => {
-    confirmModal.classList.remove('active');
-    conversationIdToDelete = null;
-  });
-
-  confirmDelete.addEventListener('click', () => {
-    if (conversationIdToDelete !== null) {
-      deleteConversation(conversationIdToDelete);
-      conversationIdToDelete = null;
-    }
-    confirmModal.classList.remove('active');
-  });
-
-  // Fermer la modal en cliquant à l'extérieur
-  confirmModal.addEventListener('click', (e) => {
-    if (e.target === confirmModal) {
-      confirmModal.classList.remove('active');
-      conversationIdToDelete = null;
-    }
-  });
-
-  // ===========================
-  // ENVOYER UN MESSAGE
-  // ===========================
-
+  // ── Envoi ───────────────────────────────────────────────────────────────────
   actionBtn.addEventListener('click', () => {
+    if (isSpeakerMode) return; // pas d'envoi texte en mode vocal
     const text = input.value.trim();
     if (!text && !selectedFile) return;
 
     const fileInfo = selectedFile ? selectedFile.name : null;
     addMessage(text || 'Fichier envoyé', 'user', fileInfo);
 
-    // Sauvegarder dans l'historique UNIQUEMENT si c'est le premier message de la conversation
     if (isFirstMessage && text) {
       addToHistory(text.substring(0, 30) + (text.length > 30 ? '...' : ''));
       isFirstMessage = false;
@@ -1824,178 +789,155 @@
     previewName.textContent = '';
     input.dispatchEvent(new Event('input'));
 
-    const typingIndicator = addTypingIndicator();
-
+    const typing = addTypingIndicator();
     setTimeout(() => {
-      removeTypingIndicator(typingIndicator);
-      addMessage("Réponse de Starky : " + (text || 'Fichier reçu'), 'bot');
+      removeTypingIndicator(typing);
+      addMessage('Réponse de Starky : ' + (text || 'Fichier reçu'), 'bot');
     }, 1500);
   });
 
-  // Support Enter
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      actionBtn.click();
-    }
-  });
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); actionBtn.click(); } });
 
-  // ===========================
-  // GESTION DU MENU
-  // ===========================
-
-  // Fonction pour fermer le menu
+  // ── Menu ────────────────────────────────────────────────────────────────────
   function closeMenu() {
     sideMenu.classList.remove('active');
     sideMenu.setAttribute('aria-hidden', 'true');
     overlay.classList.remove('active');
   }
-
-  // Ouvrir le menu
   menuBtn.addEventListener('click', () => {
     sideMenu.classList.add('active');
     sideMenu.setAttribute('aria-hidden', 'false');
     overlay.classList.add('active');
     overlay.focus();
   });
-
-  // Fermer le menu via overlay
   overlay.addEventListener('click', closeMenu);
-
-  // Fermer avec Échap
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      if (authModal.classList.contains('active')) {
-        authModal.classList.remove('active');
-      } else if (confirmModal.classList.contains('active')) {
-        confirmModal.classList.remove('active');
-        conversationIdToDelete = null;
-      } else if (sideMenu.classList.contains('active')) {
-        closeMenu();
-      } else if (userMenu.classList.contains('active')) {
-        userMenu.classList.remove('active');
-      }
+      if (confirmModal.classList.contains('active')) { confirmModal.classList.remove('active'); conversationIdToDelete = null; }
+      else if (sideMenu.classList.contains('active')) closeMenu();
     }
   });
 
-  // ===========================
-  // ACCORDÉON HISTORIQUE
-  // ===========================
-
+  // ── Accordéon ───────────────────────────────────────────────────────────────
   let accOpen = false;
   function toggleAcc() {
     accOpen = !accOpen;
-    if (accOpen) {
-      accContent.style.maxHeight = accContent.scrollHeight + "px";
-      accChevron.style.transform = "rotate(180deg)";
-      accHeader.setAttribute('aria-expanded', 'true');
-      accContent.setAttribute('aria-hidden', 'false');
-    } else {
-      accContent.style.maxHeight = "0";
-      accChevron.style.transform = "rotate(0deg)";
-      accHeader.setAttribute('aria-expanded', 'false');
-      accContent.setAttribute('aria-hidden', 'true');
-    }
+    accContent.style.maxHeight = accOpen ? accContent.scrollHeight + 'px' : '0';
+    accChevron.style.transform = accOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+    accHeader.setAttribute('aria-expanded', String(accOpen));
+    accContent.setAttribute('aria-hidden', String(!accOpen));
   }
   accHeader.addEventListener('click', toggleAcc);
-  accHeader.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggleAcc();
-    }
+  accHeader.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleAcc(); } });
+
+  // ── Historique ───────────────────────────────────────────────────────────────
+  function createHistoryItem(conv) {
+    const item = document.createElement('div');
+    item.className  = 'history-item';
+    item.dataset.id = conv.id;
+
+    const textSpan = document.createElement('span');
+    textSpan.className   = 'history-item-text';
+    textSpan.textContent = conv.title;
+
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'history-item-actions';
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.setAttribute('aria-label', 'Options');
+    deleteBtn.innerHTML = '<span class="material-icons-outlined">more_vert</span>';
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      conversationIdToDelete = conv.id;
+      confirmModal.classList.add('active');
+    });
+
+    actionsDiv.appendChild(deleteBtn);
+    item.appendChild(textSpan);
+    item.appendChild(actionsDiv);
+    item.addEventListener('click', () => { showNotification('Chargement de: ' + conv.title); closeMenu(); });
+    return item;
+  }
+
+  function updateHistoryList() {
+    historyList.innerHTML = '';
+    conversationHistory.forEach(c => historyList.appendChild(createHistoryItem(c)));
+    if (accOpen) accContent.style.maxHeight = accContent.scrollHeight + 'px';
+  }
+
+  function addToHistory(title) {
+    const nc = { id: Date.now(), title, date: new Date() };
+    conversationHistory.unshift(nc);
+    currentConversationId = nc.id;
+    updateHistoryList();
+  }
+
+  function deleteConversation(id) {
+    conversationHistory = conversationHistory.filter(c => c.id !== id);
+    updateHistoryList();
+    showNotification('Conversation supprimée');
+  }
+
+  // ── Modal ───────────────────────────────────────────────────────────────────
+  cancelDelete.addEventListener('click', () => { confirmModal.classList.remove('active'); conversationIdToDelete = null; });
+  confirmDelete.addEventListener('click', () => {
+    if (conversationIdToDelete !== null) { deleteConversation(conversationIdToDelete); conversationIdToDelete = null; }
+    confirmModal.classList.remove('active');
+  });
+  confirmModal.addEventListener('click', (e) => {
+    if (e.target === confirmModal) { confirmModal.classList.remove('active'); conversationIdToDelete = null; }
   });
 
-  // New Chat - Réinitialise la conversation
-  const newChatLink = document.getElementById('newChatLink');
-  newChatLink.addEventListener('click', (e) => {
+  // ── New Chat ─────────────────────────────────────────────────────────────────
+  document.getElementById('newChatLink').addEventListener('click', (e) => {
     e.preventDefault();
     chat.innerHTML = '';
-    welcome.style.display = 'block';
-    welcome.style.opacity = '1';
+    welcome.style.display   = 'flex';
+    welcome.style.opacity   = '1';
     welcome.style.transform = 'translateY(0)';
-    isFirstMessage = true;
+    isFirstMessage        = true;
     currentConversationId = null;
     closeMenu();
   });
 
-  // ===========================
-  // NOTIFICATION
-  // ===========================
-
-  function showNotification(message) {
-    const notification = document.getElementById('notification');
-    notification.textContent = message;
-    notification.classList.add('show');
-    setTimeout(() => {
-      notification.classList.remove('show');
-    }, 3000);
+  // ── Notification ─────────────────────────────────────────────────────────────
+  function showNotification(msg) {
+    const notif = document.getElementById('notification');
+    notif.textContent = msg;
+    notif.classList.add('show');
+    setTimeout(() => notif.classList.remove('show'), 3000);
   }
 
-  // ===========================
-  // AJUSTEMENT CLAVIER
-  // ===========================
+  // ── Google Login ─────────────────────────────────────────────────────────────
+  function onSignIn(response) {
+    try { const u = jwt_decode(response.credential); showNotification('Connecté : ' + (u.email || 'inconnu')); }
+    catch(e) { console.error(e); }
+  }
+  window.onSignIn = onSignIn;
 
+  // ── Ajustement clavier mobile ─────────────────────────────────────────────────
   function adjustForKeyboard() {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    const viewportHeight = vv.height;
-    const fullHeight = window.innerHeight;
-    const keyboardHeight = Math.max(0, fullHeight - viewportHeight);
-    const inputWrapper = document.querySelector('.input-wrapper');
-    if (keyboardHeight > 150) {
-      inputWrapper.style.bottom = (keyboardHeight + 10) + 'px';
-      const chatEl = document.getElementById('chat');
-      chatEl.style.bottom = (keyboardHeight + 70) + 'px';
-    } else {
-      inputWrapper.style.bottom = '15px';
-      const chatEl = document.getElementById('chat');
-      chatEl.style.bottom = '140px';
-    }
+    const vv = window.visualViewport; if (!vv) return;
+    const kh = Math.max(0, window.innerHeight - vv.height);
+    const iw = document.querySelector('.input-wrapper');
+    const ce = document.getElementById('chat');
+    if (kh > 150) { iw.style.bottom = (kh + 10) + 'px'; ce.style.bottom = (kh + 70) + 'px'; }
+    else           { iw.style.bottom = '15px';            ce.style.bottom = '140px'; }
   }
   if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', () => {
-      setVh();
-      adjustForKeyboard();
-    });
+    window.visualViewport.addEventListener('resize', () => { setVh(); adjustForKeyboard(); });
     window.visualViewport.addEventListener('scroll', adjustForKeyboard);
   } else {
-    window.addEventListener('resize', () => {
-      setVh();
-      adjustForKeyboard();
-    });
+    window.addEventListener('resize', () => { setVh(); adjustForKeyboard(); });
   }
 
-  // ===========================
-  // INITIALISATION
-  // ===========================
-
-  // Initialiser avec quelques conversations de test
-  function initializeTestData() {
-    const testConversations = [
-      'Comment créer une application web ?',
-      'Explique-moi React',
-      'Qu\'est-ce que le machine learning ?',
-      'Comment optimiser mon code ?',
-      'Tutoriel Python pour débutants'
-    ];
-
-    testConversations.forEach((title, index) => {
-      conversationHistory.push({
-        id: Date.now() + index,
-        title: title,
-        date: new Date()
-      });
-    });
-
-    updateHistoryList();
-  }
-
-  // Initialiser les données de test au chargement
-  initializeTestData();
-
-  // Initialiser l'affichage utilisateur
-  updateUserDisplay();
+  // ── Données de test ────────────────────────────────────────────────────────
+  ['Comment créer une application web ?', 'Explique-moi React', "Qu'est-ce que le machine learning ?", 'Comment optimiser mon code ?', 'Tutoriel Python pour débutants']
+    .forEach((title, i) => conversationHistory.push({ id: Date.now() + i, title, date: new Date() }));
+  updateHistoryList();
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
 </body>
 </html>
